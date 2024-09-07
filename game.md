@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "我的游戏"
+title: "小游戏"
 date:   2024-9-2
 tags: [game]
 comments: true
