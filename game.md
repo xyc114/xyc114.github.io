@@ -6,5 +6,5 @@ tags: [game]
 comments: true
 author: xyc
 ---
-[贪吃蛇](https://xyc114.github.io/snake.html)
-[扫雷](https://xyc114.github.io/mine_clearance.html)
+[贪吃蛇](https://xyc114.github.io/games/snake.html)
+[扫雷](https://xyc114.github.io/games/mine_clearance.html)
