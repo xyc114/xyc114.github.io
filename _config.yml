@@ -12,7 +12,7 @@ navigation:
   - name: 分类
     url: /tags
   - name: 游戏
-    url: /game
+    url: /game.html
 
 paginate: 8
 
