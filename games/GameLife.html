@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>康威生命游戏</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+
+    #game-board {
+      display: inline-block;
+      border: 1px solid black;
+    }
+
+    .cell {
+      width: 15px;
+      height: 15px;
+      float: left;
+      border:1px solid black;
+      background-color: white;
+    }
+
+    .cell.alive {
+      background-color: black;
+    }
+
+    button {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1 style="font-size: 14px;">康威生命游戏 先点击设定初始图形，再点击开始</h1>
+  <div id="game-board"></div>
+
+  <button onclick="startGame()" style="width: 50px;">开始</button>
+  <button onclick="clearBoard()" style="width: 50px;">清除</button>
+  <button onclick="stopGame()" style="width: 50px;">暂停</button>
+  <button onclick="setRandom()" style="width: 50px;">随机</button>
+  <button onclick="next()" style="width: 100px;">下<input type="number" style="width: 30px;" id="times" value="1">轮</button>
+  <br>
+  rows: <input type="number" id="rows" value="30" min="1" max="100">
+  <br>
+  cols: <input type="number" id="cols" value="30" min="1" max="100">
+  <br>
+  speed: <input type="number" id="speed" value="300">
+  <script>
+    ROWS = 30;
+    COLS = 30;
+    let board = [];
+    let nextBoard = [];
+    let gameInterval = null; // 添加一个全局变量来存储定时器的引用  
+
+    function next() {
+      let times = document.getElementById('times').value;
+      for (let i = 0; i < times; i++) {
+        updateBoard();
+        drawBoard();
+      }
+    }
+
+    function setRandom() {
+      for (let i = 0; i < ROWS; i++) {
+        for (let j = 0; j < COLS; j++) {
+          board[i][j] = Math.random() < 0.5;
+        }
+      }
+      drawBoard();
+    }
+
+    function get(){
+      ROWS = document.getElementById('rows').value;
+      COLS = document.getElementById('cols').value;
+      drawBoard();
+    }
+
+    function initializeBoard() {
+      board = [];
+      nextBoard = [];
+
+      for (let i = 0; i < ROWS; i++) {
+        board[i] = [];
+        nextBoard[i] = [];
+
+        for (let j = 0; j < COLS; j++) {
+          board[i][j] = false;
+          nextBoard[i][j] = false;
+        }
+      }
+    }
+
+    function drawBoard() {
+      const gameBoard = document.getElementById('game-board');
+      gameBoard.innerHTML = '';
+
+      for (let i = 0; i < ROWS; i++) {
+        for (let j = 0; j < COLS; j++) {
+          const cell = document.createElement('div');
+          cell.className = 'cell';
+
+          if (board[i][j]) {
+            cell.classList.add('alive');
+          }
+
+          cell.addEventListener('click', () => {
+            board[i][j] = !board[i][j];
+            drawBoard();
+          });
+
+          gameBoard.appendChild(cell);
+        }
+
+        const br = document.createElement('br');
+        gameBoard.appendChild(br);
+      }
+    }
+
+    function countNeighbors(row, col) {
+      let count = 0;
+
+      for (let i = -1; i <= 1; i++) {
+        for (let j = -1; j <= 1; j++) {
+          if (i === 0 && j === 0) {
+            continue;
+          }
+
+          const neighborRow = row + i;
+          const neighborCol = col + j;
+
+          if (
+            neighborRow >= 0 &&
+            neighborRow < ROWS &&
+            neighborCol >= 0 &&
+            neighborCol < COLS &&
+            board[neighborRow][neighborCol]
+          ) {
+            count++;
+          }
+        }
+      }
+
+      return count;
+    }
+
+    function updateBoard() {
+      for (let i = 0; i < ROWS; i++) {
+        for (let j = 0; j < COLS; j++) {
+          const neighbors = countNeighbors(i, j);
+
+          if (board[i][j]) {
+            if (neighbors < 2 || neighbors > 3) {
+              nextBoard[i][j] = false;
+            } else {
+              nextBoard[i][j] = true;
+            }
+          } else {
+            if (neighbors === 3) {
+              nextBoard[i][j] = true;
+            }
+          }
+        }
+      }
+
+      for (let i = 0; i < ROWS; i++) {
+        for (let j = 0; j < COLS; j++) {
+          board[i][j] = nextBoard[i][j];
+        }
+      }
+    }
+
+    function startGame() {
+      get();
+      // 在启动新定时器之前，检查并清除可能存在的旧定时器  
+      if (gameInterval !== null) {  
+        clearInterval(gameInterval);  
+        gameInterval = null;  
+      }  
+  
+      // 启动新的定时器并保存在全局变量中  
+      gameInterval = setInterval(() => {  
+        updateBoard();  
+        drawBoard();  
+      }, document.getElementById('speed').value);  
+    }
+
+    function stopGame() {
+      // 清除定时器  
+      if (gameInterval !== null) {  
+        clearInterval(gameInterval);  
+        gameInterval = null;  
+      }
+    }
+
+    function clearBoard() {
+      get();
+       // 清除定时器  
+       if (gameInterval !== null) {  
+        clearInterval(gameInterval);  
+        gameInterval = null;  
+      }  
+      initializeBoard();
+      drawBoard();
+    }
+
+    initializeBoard();
+    drawBoard();
+  </script>
+</body>
+</html>
