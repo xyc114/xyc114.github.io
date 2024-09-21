@@ -1,28 +1,124 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8"> 
-    <title>小游戏</title> 
-  </head>
-  <body>
-    <h1>小游戏</h1>
-    <h2>
-      <a href="https://xyc114.github.io/games/snake.html">贪吃蛇</a>
-    </h2>
-    <h2>
-      <a href="https://xyc114.github.io/games/mine_clearance.html">扫雷</a>
-    </h2>
-    <h2>
-      <a href="https://xyc114.github.io/games/tetris.html">俄罗斯方块</a>
-    </h2>
-    <h2>
-      <a href="https://xyc114.github.io/games/GameLife.html">生命的游戏</a>
-    </h2>
-    <h2>
-      <a href="https://vochantia.netlify.app/web/webapps/singleplayers">我的世界</a>
-    </h2>
-    <h2>
-      <a href="https://zhuanlan.zhihu.com/p/531408059">关于io游戏</a>
-    </h2>
-  </body>
+
+<head>
+  <meta charset="utf-8">
+  <script src="xyc114.github.io\css\jquery.min.css"></script>
+  <link rel="stylesheet" href="xyc114.github.io\js\jquery.min.js">
+  <title>sss</title>
+</head>
+
+<body>
+  <iframe style="margin-left:215px;margin-top:10px" height="500" width="1000" frameborder="0" id="iframe">
+  </iframe>
+  <a id="goto" style="margin-left:700px;margin-top:200px">跳转</a>
+  <button onclick="prev()" class="firefly" style="margin-left:-600px;margin-top:200px;width: 100px;height: 50px;">
+    <p>上一个</p>
+    <div class="lightning">
+      <ul>
+        <li>prev</li>
+        <li>prev</li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+      </ul>
+    </div>
+  </button>
+  <button onclick="next()" class="firefly" style="margin-left:600px;margin-top:200px;width: 100px;height: 50px;">
+    <p>下一个</p>
+    <div class="lightning">
+      <ul>
+        <li>next</li>
+        <li>next</li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+      </ul>
+    </div>
+  </button>
+  <script>
+    var lgh = $('.lightning li').length;
+    console.log(lgh)
+
+    $('.lightning li').each(function (i) {
+        $(this).css({
+            left: i * (100 / lgh) + '%',
+            bottom: randomNum(-20, 10) + '%',
+            animationDuration: randomNum(1, 5) + 's'
+        });
+    });
+
+    function randomNum(max, min) {
+        var num = Math.floor(Math.random() * (max - min + 1) + min);
+        return num;
+    }
+    
+    var s=[];
+    var cnt=40,i=0;
+    s[0]="https://xyc114.github.io/games/GameLife.html";
+    s[1]="https://xyc114.github.io/games/mine_clearance.html";
+    s[2]="https://xyc114.github.io/games/snake.html";
+    s[3]="https://xyc114.github.io/games/tetris.html";
+    s[4]="https://vochantia.netlify.app/web/webapps/singleplayers";
+    s[5]="https://Wings.Io";
+    s[6]="https://Eatme.Io";
+    s[7]="https://Gats.Io";
+    s[8]="https://Hole.Io";
+    s[9]="https://Mope.Io";
+    s[10]="https://Surviv.Io";
+    s[11]="https://Aggie.Io";
+    s[12]="https://Paper.Io";
+    s[13]="https://Warbot.Io";
+    s[14]="https://Superhex.Io";
+    s[15]="https://Brutal.Io";
+    s[16]="https://Goons.Io";
+    s[17]="https://Deeeep.Io";
+    s[18]="https://EvoWars.Io";
+    s[19]="https://Zombs.Io";
+    s[20]="https://Narwhale.Io";
+    s[21]="https://Slither.Io";
+    s[22]="https://Diep.Io";
+    s[23]="https://Agar.Io";
+    s[24]="https://florr.io";
+    s[25]="https://digdig.io";
+    s[26]="https://zlap.io";
+    s[27]="https://gartic.io";
+    s[28]="https://generals.io";
+    s[29]="https://suroi.io";
+    s[30]="https://shapez.io";
+    s[31]="https://arras.io";
+    s[32]="https://starblast.io";
+    s[33]="https://territorial.io";
+    s[34]="https://stug.io";
+    s[35]="https://mk48.io";
+    s[36]="https://shipcraft.io";
+    s[37]="https://kiomet.com";
+    s[38]="https://venge.io";
+    s[39]="https://www.old-games.com/";
+    function next(){
+      i=(i+1)%cnt;
+      document.getElementById("iframe").src=s[i];
+      document.getElementById("goto").href=s[i];
+    }
+    function prev(){
+      i=(i-1+cnt)%cnt;
+      document.getElementById("iframe").src=s[i];
+      document.getElementById("goto").href=s[i];
+    }
+    next();
+</script>
+</body>
+
 </html>
