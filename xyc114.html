@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>稳定小窗口 · 指针事件加持 · 自由拖拽/调整</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none; /* 防止拖拽时选中文本 */
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f2f5;
+        }
+
+        /* 顶部工具栏 */
+        .toolbar {
+            position: sticky;
+            top: 0;
+            background: #ffffffdd;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            padding: 12px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            z-index: 1000;
+            border-bottom: 1px solid #d0d7de;
+        }
+        .url-input {
+            flex: 1 1 400px;
+            display: flex;
+            gap: 6px;
+        }
+        .url-input input {
+            flex: 1;
+            padding: 8px 14px;
+            border: 1px solid #bdc1c6;
+            border-radius: 24px;
+            font-size: 0.95rem;
+            outline: none;
+            user-select: text;
+        }
+        .url-input input:focus {
+            border-color: #1a73e8;
+            box-shadow: 0 0 0 2px #1a73e820;
+        }
+        button {
+            background: #1a73e8;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: 0.1s;
+        }
+        button:hover {
+            background: #1669d4;
+        }
+        .reset-btn {
+            background: #3c4043;
+        }
+        .reset-btn:hover {
+            background: #2f3437;
+        }
+
+        /* 浮动窗口 - fixed 定位 */
+        .float-window {
+            position: fixed;
+            width: 560px;
+            height: 380px;
+            min-width: 260px;
+            min-height: 200px;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+            border: 1px solid rgba(255,255,255,0.3);
+            display: flex;
+            flex-direction: column;
+            z-index: 9999;
+            overflow: hidden;
+            top: 80px;
+            left: 60px;
+            transition: box-shadow 0.1s;
+        }
+        .float-window:active {
+            box-shadow: 0 18px 40px rgba(0,0,0,0.3);
+        }
+
+        /* 标题栏：拖拽区域 + 禁止触摸滚动 */
+        .window-titlebar {
+            background: #f1f3f5;
+            padding: 10px 16px;
+            cursor: grab;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #d0d7de;
+            border-radius: 16px 16px 0 0;
+            font-weight: 500;
+            color: #1e2a3a;
+            flex-shrink: 0;
+            touch-action: none;  /* 防止触摸时页面滚动 */
+        }
+        .window-titlebar:active {
+            cursor: grabbing;
+        }
+        .title-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .title-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .reset-mini {
+            background: transparent;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0 6px;
+            color: #445566;
+            touch-action: auto;   /* 按钮不需要禁用触摸 */
+        }
+        .reset-mini:hover {
+            color: #1a73e8;
+        }
+
+        /* iframe 内容区 */
+        .window-content {
+            flex: 1;
+            background: #e9edf2;
+            position: relative;
+            overflow: hidden;
+            border-radius: 0 0 16px 16px;
+        }
+        .window-content iframe {
+            display: block;
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: white;
+            pointer-events: auto;
+        }
+
+        /* 调整大小的手柄 - 禁止触摸滚动 */
+        .resize-handle {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 22px;
+            height: 22px;
+            cursor: se-resize;
+            z-index: 100000;
+            touch-action: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #5f6b7a;
+        }
+        .resize-handle::after {
+            content: "⤡";
+            font-size: 1.2rem;
+            opacity: 0.7;
+            background: #ffffffcc;
+            border-radius: 4px;
+            border: 1px solid #a0aab6;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 2px;
+            line-height: 1;
+        }
+
+        /* 拖拽 / 调整大小时禁用 iframe 交互 */
+        .float-window.resizing iframe,
+        .float-window.dragging iframe {
+            pointer-events: none !important;
+        }
+
+        .info-note {
+            margin: 16px 24px;
+            color: #445566;
+            background: #e2e6ec;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <!-- 工具栏 -->
+    <div class="toolbar">
+        <label for="urlField">🌐 打开网页：</label>
+        <div class="url-input">
+            <input type="text" id="urlField" placeholder="https://example.com" value="https://example.com" />
+            <button id="loadBtn">➤ 加载</button>
+        </div>
+        <button id="resetWindowBtn" class="reset-btn">↺ 重置窗口</button>
+    </div>
+
+    <!-- 浮动窗口 -->
+    <div id="floatWindow" class="float-window" style="top:80px; left:60px; width:560px; height:380px;">
+        <div id="titleBar" class="window-titlebar">
+            <div class="title-left">
+                <span class="window-icon">🪟</span>
+                <span>稳定小窗口</span>
+            </div>
+            <div class="title-buttons">
+                <button id="miniResetBtn" class="reset-mini" title="重置大小和位置">↻</button>
+            </div>
+        </div>
+        <div class="window-content">
+            <iframe id="webFrame" src="https://example.com" title="浮动窗口" sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals allow-downloads allow-storage-access-by-user-activation" allowfullscreen></iframe>
+        </div>
+        <div id="resizeHandle" class="resize-handle" title="拖动调整大小"></div>
+    </div>
+
+    <div class="info-note">
+        ✅ 采用指针事件 + setPointerCapture，拖拽移出窗口再松开也不会卡住
+    </div>
+
+    <script>
+        (function() {
+            const floatWindow = document.getElementById('floatWindow');
+            const titleBar = document.getElementById('titleBar');
+            const resizeHandle = document.getElementById('resizeHandle');
+            const iframe = document.getElementById('webFrame');
+            const urlInput = document.getElementById('urlField');
+            const loadBtn = document.getElementById('loadBtn');
+            const resetWindowBtn = document.getElementById('resetWindowBtn');
+            const miniResetBtn = document.getElementById('miniResetBtn');
+
+            // 状态
+            let isDragging = false;
+            let isResizing = false;
+            // 拖拽专用变量
+            let dragOffsetX = 0, dragOffsetY = 0;
+            // 调整大小专用变量
+            let resizeStartWidth = 0, resizeStartHeight = 0;
+            let resizeStartMouseX = 0, resizeStartMouseY = 0;
+            let resizeStartLeft = 0, resizeStartTop = 0;
+
+            const MIN_WIDTH = 260;
+            const MIN_HEIGHT = 200;
+
+            // ----- 辅助函数：边界限制 -----
+            function clampPosition(left, top, width, height) {
+                const winW = window.innerWidth;
+                const winH = window.innerHeight;
+                left = Math.max(0, Math.min(left, winW - width));
+                top = Math.max(0, Math.min(top, winH - height));
+                return { left, top };
+            }
+
+            function setWindowPosition(left, top) {
+                floatWindow.style.left = left + 'px';
+                floatWindow.style.top = top + 'px';
+            }
+
+            function setWindowSize(width, height, alsoClampPosition = true) {
+                width = Math.max(MIN_WIDTH, width);
+                height = Math.max(MIN_HEIGHT, height);
+
+                const currentLeft = parseFloat(floatWindow.style.left) || 0;
+                const currentTop = parseFloat(floatWindow.style.top) || 0;
+                const winW = window.innerWidth;
+                const winH = window.innerHeight;
+
+                const maxWidth = winW - currentLeft;
+                const maxHeight = winH - currentTop;
+                width = Math.min(width, maxWidth);
+                height = Math.min(height, maxHeight);
+
+                floatWindow.style.width = width + 'px';
+                floatWindow.style.height = height + 'px';
+
+                if (alsoClampPosition) {
+                    const newLeft = parseFloat(floatWindow.style.left) || 0;
+                    const newTop = parseFloat(floatWindow.style.top) || 0;
+                    const clamped = clampPosition(newLeft, newTop, width, height);
+                    setWindowPosition(clamped.left, clamped.top);
+                }
+            }
+
+            // 重置窗口
+            function resetWindow() {
+                let targetWidth = 560;
+                let targetHeight = 380;
+                let targetLeft = 60;
+                let targetTop = 80;
+                const winW = window.innerWidth;
+                const winH = window.innerHeight;
+                targetWidth = Math.min(targetWidth, winW - 20);
+                targetHeight = Math.min(targetHeight, winH - 20);
+                targetLeft = Math.min(targetLeft, winW - targetWidth);
+                targetTop = Math.min(targetTop, winH - targetHeight);
+                targetLeft = Math.max(10, targetLeft);
+                targetTop = Math.max(10, targetTop);
+                setWindowPosition(targetLeft, targetTop);
+                setWindowSize(targetWidth, targetHeight, false);
+            }
+
+            // ----- 指针事件处理（拖拽 + 调整大小）-----
+            // 统一 pointerdown 处理
+            function handlePointerDown(e) {
+                // 只响应鼠标左键（按钮0）或主要触摸点
+                if (!e.isPrimary || e.button !== 0) return;
+
+                const target = e.target;
+                // 根据 target 判断是拖拽还是调整大小
+                if (target === titleBar || target.closest('.window-titlebar')) {
+                    // 防止事件冒泡到其他元素
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    // 如果正在调整大小，强制结束
+                    if (isResizing) stopResize();
+
+                    // 记录起始偏移
+                    const rect = floatWindow.getBoundingClientRect();
+                    dragOffsetX = e.clientX - rect.left;
+                    dragOffsetY = e.clientY - rect.top;
+
+                    isDragging = true;
+                    floatWindow.classList.add('dragging');
+
+                    // 捕获后续指针事件（关键：即使移出窗口也能收到 move/up）
+                    titleBar.setPointerCapture(e.pointerId);
+
+                    // 全局监听 pointermove / pointerup（其实利用捕获已经足够，但为了方便清理，也添加）
+                    document.addEventListener('pointermove', onPointerMove);
+                    document.addEventListener('pointerup', onPointerUp);
+                    document.addEventListener('pointercancel', onPointerCancel);
+                }
+                else if (target === resizeHandle || target.closest('.resize-handle')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    if (isDragging) stopDrag();
+
+                    const rect = floatWindow.getBoundingClientRect();
+                    resizeStartWidth = rect.width;
+                    resizeStartHeight = rect.height;
+                    resizeStartMouseX = e.clientX;
+                    resizeStartMouseY = e.clientY;
+                    resizeStartLeft = rect.left;
+                    resizeStartTop = rect.top;
+
+                    isResizing = true;
+                    floatWindow.classList.add('resizing');
+
+                    resizeHandle.setPointerCapture(e.pointerId);
+
+                    document.addEventListener('pointermove', onPointerMove);
+                    document.addEventListener('pointerup', onPointerUp);
+                    document.addEventListener('pointercancel', onPointerCancel);
+                }
+            }
+
+            function onPointerMove(e) {
+                if (!e.isPrimary) return;
+
+                if (isDragging) {
+                    e.preventDefault(); // 防止拖拽时选中或默认行为
+
+                    let newLeft = e.clientX - dragOffsetX;
+                    let newTop = e.clientY - dragOffsetY;
+
+                    const width = floatWindow.offsetWidth;
+                    const height = floatWindow.offsetHeight;
+                    const clamped = clampPosition(newLeft, newTop, width, height);
+                    setWindowPosition(clamped.left, clamped.top);
+                }
+                else if (isResizing) {
+                    e.preventDefault();
+
+                    const deltaX = e.clientX - resizeStartMouseX;
+                    const deltaY = e.clientY - resizeStartMouseY;
+
+                    let newWidth = resizeStartWidth + deltaX;
+                    let newHeight = resizeStartHeight + deltaY;
+
+                    newWidth = Math.max(MIN_WIDTH, newWidth);
+                    newHeight = Math.max(MIN_HEIGHT, newHeight);
+
+                    // 根据当前左上角限制最大宽高
+                    const currentLeft = resizeStartLeft; // 注意 resize 过程中左上角不变
+                    const currentTop = resizeStartTop;
+                    const winW = window.innerWidth;
+                    const winH = window.innerHeight;
+                    const maxWidth = winW - currentLeft;
+                    const maxHeight = winH - currentTop;
+                    newWidth = Math.min(newWidth, maxWidth);
+                    newHeight = Math.min(newHeight, maxHeight);
+
+                    floatWindow.style.width = newWidth + 'px';
+                    floatWindow.style.height = newHeight + 'px';
+                }
+            }
+
+            function onPointerUp(e) {
+                if (!e.isPrimary) return;
+                e.preventDefault(); // 可选
+
+                if (isDragging) {
+                    stopDrag(e);
+                } else if (isResizing) {
+                    stopResize(e);
+                }
+                // 移除全局监听
+                document.removeEventListener('pointermove', onPointerMove);
+                document.removeEventListener('pointerup', onPointerUp);
+                document.removeEventListener('pointercancel', onPointerCancel);
+            }
+
+            function onPointerCancel(e) {
+                // 指针取消时，也视为结束
+                if (isDragging) stopDrag(e);
+                if (isResizing) stopResize(e);
+                document.removeEventListener('pointermove', onPointerMove);
+                document.removeEventListener('pointerup', onPointerUp);
+                document.removeEventListener('pointercancel', onPointerCancel);
+            }
+
+            function stopDrag(e) {
+                if (!isDragging) return;
+                isDragging = false;
+                floatWindow.classList.remove('dragging');
+                // 释放指针捕获（如果还有）
+                if (titleBar.hasPointerCapture && e?.pointerId) {
+                    titleBar.releasePointerCapture(e.pointerId);
+                }
+            }
+
+            function stopResize(e) {
+                if (!isResizing) return;
+                isResizing = false;
+                floatWindow.classList.remove('resizing');
+                if (resizeHandle.hasPointerCapture && e?.pointerId) {
+                    resizeHandle.releasePointerCapture(e.pointerId);
+                }
+            }
+
+            // ----- 加载URL -----
+            function loadUrl() {
+                let url = urlInput.value.trim();
+                if (!url) url = 'https://example.com';
+                if (!url.match(/^https?:\/\//i)) {
+                    url = 'https://' + url;
+                }
+                try {
+                    iframe.src = url;
+                } catch {
+                    alert('无法加载此网址');
+                }
+            }
+
+            // ----- 事件绑定 (统一使用指针事件) -----
+            titleBar.addEventListener('pointerdown', handlePointerDown);
+            resizeHandle.addEventListener('pointerdown', handlePointerDown);
+
+            // 防止迷你重置按钮触发拖拽
+            miniResetBtn.addEventListener('pointerdown', (e) => {
+                e.stopPropagation();  // 阻止事件传到标题栏
+            });
+            miniResetBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                resetWindow();
+            });
+
+            // 加载按钮
+            loadBtn.addEventListener('click', loadUrl);
+            urlInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') loadUrl();
+            });
+
+            resetWindowBtn.addEventListener('click', resetWindow);
+
+            // 窗口大小变化时，确保窗口仍在视口内
+            window.addEventListener('resize', () => {
+                const left = parseFloat(floatWindow.style.left) || 0;
+                const top = parseFloat(floatWindow.style.top) || 0;
+                const width = floatWindow.offsetWidth;
+                const height = floatWindow.offsetHeight;
+                const clamped = clampPosition(left, top, width, height);
+                setWindowPosition(clamped.left, clamped.top);
+
+                // 如果视口变小导致窗口超出右/下边界，收缩尺寸
+                let newWidth = width;
+                let newHeight = height;
+                if (clamped.left + newWidth > window.innerWidth) {
+                    newWidth = window.innerWidth - clamped.left;
+                }
+                if (clamped.top + newHeight > window.innerHeight) {
+                    newHeight = window.innerHeight - clamped.top;
+                }
+                setWindowSize(newWidth, newHeight, false);
+            });
+
+            // 初始重置
+            window.dispatchEvent(new Event('resize'));
+
+            // 默认加载 example.com
+            iframe.src = 'https://example.com';
+            urlInput.value = 'https://example.com';
+        })();
+    </script>
+</body>
+</html>
