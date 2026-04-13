@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>🕯️ 云端上香 · 缅怀</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #0f0f0f;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', 'Microsoft YaHei', system-ui, -apple-system, sans-serif;
+      padding: 16px;
+      margin: 0;
+    }
+
+    .memorial-card {
+      max-width: 480px;
+      width: 100%;
+      background: #1c1c1e;
+      border-radius: 40px 40px 32px 32px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 215, 0, 0.1) inset;
+      padding: 24px 20px 30px;
+      backdrop-filter: blur(2px);
+      transition: all 0.2s;
+      border-bottom: 4px solid #2a2a2c;
+    }
+
+    h2 {
+      text-align: center;
+      font-weight: 400;
+      letter-spacing: 6px;
+      color: #d9d2c0;
+      text-shadow: 0 2px 5px #00000050;
+      font-size: 1.7rem;
+      margin-top: -6px;
+      margin-bottom: 16px;
+      word-break: keep-all;
+    }
+    h2 span {
+      display: inline-block;
+      transform: scale(1.2);
+      margin: 0 6px;
+    }
+
+    /* 照片区域 */
+    .photo-shrine {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      margin-bottom: 18px;
+    }
+
+    .photo-frame {
+      position: relative;
+      width: 100%;
+      max-width: 300px;
+      border-radius: 24px;
+      background: #101010;
+      box-shadow: 0 0 0 2px #3a3a3c, 0 18px 30px -8px black, 0 0 0 1px #5e5e5e inset;
+      transition: box-shadow 0.3s ease;
+    }
+
+    /* 照片容器（相对定位用于覆盖层） */
+    .photo-container {
+      position: relative;
+      width: 100%;
+      border-radius: 24px;
+      overflow: hidden;
+      line-height: 0;
+      background: #1e1e1e;
+      aspect-ratio: 3 / 4;  /* 保持与之前SVG相同的比例，也可根据实际图片调整 */
+    }
+
+    /* 纪念照片 —— 现在使用img标签，用户替换IMGLINK即可 */
+    .memorial-photo {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;     /* 保证图片填充容器，不变形 */
+      border-radius: 22px;
+      filter: sepia(0.3) contrast(1.1) brightness(0.95);
+      transition: filter 0.2s;
+      background: #2a2a2f;   /* 图片加载前/失败时的背景色 */
+    }
+
+    /* 反应浮层 — 点击后出现大emoji/符号 */
+    .reaction-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      font-size: 5.5rem;
+      text-shadow: 0 0 20px currentColor;
+      opacity: 0;
+      transform: scale(0.8);
+      transition: opacity 0.2s, transform 0.2s;
+      background: radial-gradient(circle, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.3) 100%);
+      border-radius: 22px;
+      color: #f3e9c0;
+      z-index: 10;
+    }
+
+    .reaction-overlay.show {
+      opacity: 1;
+      transform: scale(1.2);
+      transition: opacity 0.15s, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* 照片下方挽联/信息 */
+    .memorial-caption {
+      text-align: center;
+      margin: 12px 0 6px;
+      color: #b9b0a2;
+      font-size: 0.9rem;
+      letter-spacing: 2px;
+      border-top: 1px dashed #3f3f44;
+      padding-top: 14px;
+    }
+    .memorial-caption p {
+      font-style: italic;
+    }
+
+    /* 反馈消息区域 */
+    .message-board {
+      background: #262629;
+      border-radius: 60px;
+      padding: 12px 18px;
+      margin: 10px 0 18px;
+      text-align: center;
+      color: #e5ddcf;
+      font-size: 1.1rem;
+      font-weight: 400;
+      border-left: 4px solid #b89b7b;
+      box-shadow: inset 0 2px 5px #0a0a0a, 0 4px 6px #00000030;
+      min-height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      word-break: break-word;
+      backdrop-filter: blur(4px);
+    }
+
+    /* 统计计数 (增添仪式感) */
+    .stats-row {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 20px;
+      color: #9a9082;
+      font-size: 0.9rem;
+      background: #1f1f21;
+      padding: 8px 6px;
+      border-radius: 40px;
+      border: 1px solid #3c3a35;
+    }
+    .stat-item {
+      display: flex;
+      align-items: baseline;
+      gap: 5px;
+    }
+    .stat-count {
+      color: #dccfbc;
+      font-weight: 600;
+      font-size: 1.2rem;
+      min-width: 2.2ch;
+      text-align: right;
+    }
+
+    /* 底部三个按钮 */
+    .button-triad {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 8px;
+    }
+
+    .btn {
+      flex: 1;
+      background: #2c2c2e;
+      border: none;
+      border-bottom: 4px solid #0b0b0c;
+      color: #f0e9de;
+      padding: 14px 0;
+      font-size: 1.2rem;
+      font-weight: 500;
+      border-radius: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 6px 0 #121212, 0 4px 8px black;
+      cursor: pointer;
+      transition: all 0.1s ease;
+      letter-spacing: 2px;
+      backdrop-filter: blur(10px);
+      border-top: 1px solid #5a5a5a40;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 #0a0a0a, 0 3px 6px black;
+      border-bottom-width: 2px;
+    }
+
+    /* 不同按钮配色 */
+    .incense-btn {
+      background: #5e4b3c;
+      border-bottom-color: #2f241c;
+      color: #fbeed9;
+      text-shadow: 0 1px 3px #1f140e;
+    }
+    .offering-btn {
+      background: #2d4a3b;
+      border-bottom-color: #17261e;
+      color: #e2f0da;
+    }
+    .mourn-btn {
+      background: #3a3538;
+      border-bottom-color: #1f1c1e;
+      color: #ded3d3;
+    }
+
+    /* 小屏适配 */
+    @media (max-width: 400px) {
+      .memorial-card {
+        padding: 18px 14px 24px;
+      }
+      .btn {
+        font-size: 1rem;
+        padding: 12px 0;
+        gap: 3px;
+      }
+      .message-board {
+        font-size: 1rem;
+        padding: 10px 12px;
+      }
+      h2 {
+        font-size: 1.4rem;
+        letter-spacing: 4px;
+      }
+    }
+
+    .footnote {
+      text-align: center;
+      color: #5f5a53;
+      margin-top: 14px;
+      font-size: 0.7rem;
+      opacity: 0.7;
+    }
+  </style>
+</head>
+<body>
+<div class="memorial-card">
+  <h2>
+    <span>🕯️</span> 遥 祭 <span>🕯️</span>
+  </h2>
+
+  <!-- 中间：照片区域 -->
+  <div class="photo-shrine">
+    <div class="photo-frame">
+      <div class="photo-container" id="photoContainer">
+        <!-- 
+          ⚠️ 照片占位符：请将 src="IMGLINK" 替换为您自己的照片链接 
+          例如：src="https://example.com/memorial.jpg"
+        -->
+        <img class="memorial-photo" 
+             src="images/huahua.png" 
+             alt="纪念照片" 
+             loading="lazy">
+        <!-- 点击后出现的动态反应浮层 -->
+        <div class="reaction-overlay" id="reactionOverlay"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 照片下方铭文 -->
+  <div class="memorial-caption">
+    <p>🕊️ 永 远 怀 念 🕊️</p>
+  </div>
+
+  <!-- 动态消息板 -->
+  <div class="message-board" id="messageBoard">
+    轻触下方，遥寄追思
+  </div>
+
+  <!-- 仪式计数 -->
+  <div class="stats-row">
+    <div class="stat-item">🕯️上香 <span class="stat-count" id="incenseCount">0</span></div>
+    <div class="stat-item">🍎上贡 <span class="stat-count" id="offeringCount">0</span></div>
+    <div class="stat-item">🕊️缅怀 <span class="stat-count" id="mournCount">0</span></div>
+  </div>
+
+  <!-- 底部三个按钮 -->
+  <div class="button-triad">
+    <button class="btn incense-btn" id="incenseBtn">
+      <span>🕯️</span> 上香
+    </button>
+    <button class="btn offering-btn" id="offeringBtn">
+      <span>🍎</span> 上贡
+    </button>
+    <button class="btn mourn-btn" id="mournBtn">
+      <span>🕊️</span> 沉痛缅怀
+    </button>
+  </div>
+  <div class="footnote">—— 心香一瓣 · 遥寄哀思 ——</div>
+</div>
+
+<script>
+  (function(){
+    "use strict";
+
+    // ----- 获取DOM元素 -----
+    const overlay = document.getElementById('reactionOverlay');
+    const messageBoard = document.getElementById('messageBoard');
+    
+    const incenseSpan = document.getElementById('incenseCount');
+    const offeringSpan = document.getElementById('offeringCount');
+    const mournSpan = document.getElementById('mournCount');
+
+    const incenseBtn = document.getElementById('incenseBtn');
+    const offeringBtn = document.getElementById('offeringBtn');
+    const mournBtn = document.getElementById('mournBtn');
+
+    const photoFrame = document.querySelector('.photo-frame');
+
+    // ----- 状态 -----
+    let incenseCount = 0;
+    let offeringCount = 0;
+    let mournCount = 0;
+
+    let overlayTimer = null;
+
+    // ----- 辅助函数：显示浮层反应 -----
+    function showReaction(emoji, message, buttonType) {
+      if (overlayTimer) clearTimeout(overlayTimer);
+      
+      overlay.textContent = emoji;
+      overlay.classList.add('show');
+      
+      if (buttonType === 'incense') {
+        overlay.style.color = '#f3d9b1';
+        overlay.style.textShadow = '0 0 25px #d4a76a';
+      } else if (buttonType === 'offering') {
+        overlay.style.color = '#c7e0c0';
+        overlay.style.textShadow = '0 0 25px #7fa07f';
+      } else if (buttonType === 'mourn') {
+        overlay.style.color = '#dacfcb';
+        overlay.style.textShadow = '0 0 25px #9a8b8b';
+      }
+      
+      messageBoard.textContent = message;
+      
+      if (photoFrame) {
+        photoFrame.style.boxShadow = '0 0 0 2px #b89b7b, 0 18px 30px -8px black, 0 0 15px #c9ad7a inset';
+        setTimeout(() => {
+          photoFrame.style.boxShadow = '0 0 0 2px #3a3a3c, 0 18px 30px -8px black, 0 0 0 1px #5e5e5e inset';
+        }, 400);
+      }
+
+      overlayTimer = setTimeout(() => {
+        overlay.classList.remove('show');
+        overlayTimer = null;
+        overlay.style.color = '#f3e9c0';
+        overlay.style.textShadow = '0 0 20px currentColor';
+      }, 900);
+    }
+
+    function updateCountDisplay() {
+      incenseSpan.textContent = incenseCount;
+      offeringSpan.textContent = offeringCount;
+      mournSpan.textContent = mournCount;
+    }
+
+    // ----- 上香反应 -----
+    function handleIncense() {
+      incenseCount++;
+      updateCountDisplay();
+      
+      const messages = [
+        '🙏 一炷心香，遥寄追思。愿彼岸安宁。',
+        '🕯️ 清香三炷，青烟袅袅，带去人间怀念。',
+        '🌿 上香祈福，逝者安息，生者释然。',
+        '🕊️ 香云缭绕，愿天堂没有苦痛。'
+      ];
+      const msg = messages[Math.floor(Math.random() * messages.length)];
+      
+      showReaction('🕯️✨', msg, 'incense');
+    }
+
+    // ----- 上贡反应 -----
+    function handleOffering() {
+      offeringCount++;
+      updateCountDisplay();
+      
+      const messages = [
+        '🍎🍊 供奉鲜果时馐，以表深切缅怀。',
+        '🥀 献上素花糕饼，愿您泉下受用。',
+        '🍚🥢 薄酒粗饭，不成敬意，唯寄哀思。',
+        '🌸 鲜花素果，聊表心意，永记恩情。'
+      ];
+      const msg = messages[Math.floor(Math.random() * messages.length)];
+      
+      const emojis = ['🍎🌸', '🍊🥀', '🍚🕊️', '🍇🍌'];
+      const emoji = emojis[Math.floor(Math.random() * emojis.length)];
+      
+      showReaction(emoji, msg, 'offering');
+    }
+
+    // ----- 沉痛缅怀反应 -----
+    function handleMourn() {
+      mournCount++;
+      updateCountDisplay();
+      
+      const messages = [
+        '🖤 沉痛悼念，风范永存，一路走好。',
+        '😢 哀思如潮，音容笑貌铭记于心。',
+        '🕊️ 愿烛光指引，天堂再无烦忧。',
+        '🥀 深切缅怀，逝者长已矣，生者常戚戚。',
+        '🕯️ 默哀…… 您永远活在我们心中。'
+      ];
+      const msg = messages[Math.floor(Math.random() * messages.length)];
+      
+      const emojis = ['🕊️😢', '🥀🖤', '🕯️🕊️', '😔🙏'];
+      const emoji = emojis[Math.floor(Math.random() * emojis.length)];
+      
+      showReaction(emoji, msg, 'mourn');
+    }
+
+    // ----- 绑定事件 -----
+    incenseBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      handleIncense();
+      if (navigator.vibrate) navigator.vibrate(10);
+    });
+
+    offeringBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      handleOffering();
+      if (navigator.vibrate) navigator.vibrate(12);
+    });
+
+    mournBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      handleMourn();
+      if (navigator.vibrate) navigator.vibrate(15);
+    });
+
+    // 触摸优化
+    [incenseBtn, offeringBtn, mournBtn].forEach(btn => {
+      btn.addEventListener('touchstart', () => {}, { passive: true });
+    });
+
+    window.addEventListener('beforeunload', () => {
+      if (overlayTimer) clearTimeout(overlayTimer);
+    });
+
+  })();
+</script>
+</body>
+</html>
