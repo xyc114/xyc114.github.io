@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>专注助手 · 全屏无干扰 · 30分钟周期</title>
+    <title>专注助手 · 可配置网址</title>
     <style>
         * {
             margin: 0;
@@ -37,33 +37,25 @@
             background: #fff;
         }
 
-        /* 右下角微型半透明计时器 */
+        /* 右下角半透明微型计时器 */
         .mini-timer {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
+            bottom: 16px;
+            right: 16px;
             background: rgba(0, 0, 0, 0.55);
             backdrop-filter: blur(8px);
             border-radius: 40px;
-            padding: 8px 18px;
+            padding: 6px 14px;
             font-family: monospace;
-            font-size: 18px;
-            font-weight: 600;
-            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            font-weight: 500;
+            color: #ffd966;
             letter-spacing: 1px;
             z-index: 20;
             pointer-events: none;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             transition: opacity 0.2s;
-            white-space: nowrap;
-        }
-
-        /* 休息时计时器样式微调 (依然半透明) */
-        .mini-timer.resting {
-            background: rgba(180, 80, 40, 0.65);
-            color: #ffe0b3;
-            border-color: rgba(255, 200, 100, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
 
         /* 强制休息遮罩层 */
@@ -153,12 +145,6 @@
         }
 
         @media (max-width: 680px) {
-            .mini-timer {
-                bottom: 12px;
-                right: 12px;
-                padding: 5px 12px;
-                font-size: 14px;
-            }
             .rest-card {
                 padding: 30px 24px;
                 width: 90%;
@@ -170,16 +156,22 @@
                 font-size: 2.5rem;
                 letter-spacing: 3px;
             }
+            .mini-timer {
+                font-size: 11px;
+                padding: 4px 10px;
+                bottom: 12px;
+                right: 12px;
+            }
         }
     </style>
 </head>
 <body>
 
 <div class="iframe-wrapper">
-    <iframe id="mainFrame" title="内嵌网页" src="https://cg.163.com" sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals allow-top-navigation-by-user-activation allow-downloads allow-presentation"></iframe>
+    <iframe id="mainFrame" title="内嵌网页" src="about:blank" sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals allow-top-navigation-by-user-activation allow-downloads allow-presentation"></iframe>
 </div>
 
-<!-- 右下角微型半透明计时器 -->
+<!-- 右下角微型计时器 -->
 <div class="mini-timer" id="miniTimer">⏳ 30:00</div>
 
 <div class="rest-overlay" id="restOverlay">
@@ -193,18 +185,32 @@
 
 <script>
     (function(){
-        // ======================== 配置：工作30分钟 + 休息30分钟 ========================
-        const WORK_MINUTES = 30;      // 工作30分钟
-        const REST_MINUTES = 30;       // 休息30分钟
+        // ======================== 配置：游玩和休息时间均为30分钟 ========================
+        const WORK_MINUTES = 30;
+        const REST_MINUTES = 30;
         const WORK_SECONDS = WORK_MINUTES * 60;
         const REST_SECONDS = REST_MINUTES * 60;
         
-        // 固定内嵌链接（网易云游戏）
-        const FIXED_URL = "https://cg.163.com";
+        // 从URL参数中获取目标网站
+        function getTargetUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            let target = urlParams.get('url');
+            if (target) {
+                // 简单补全协议
+                if (!target.startsWith('http://') && !target.startsWith('https://')) {
+                    target = 'https://' + target;
+                }
+                return target;
+            }
+            // 默认网站（可修改为常用网站）
+            return 'https://www.example.com';
+        }
+        
+        const TARGET_URL = getTargetUrl();
         
         // DOM 元素
         const iframe = document.getElementById('mainFrame');
-        const miniTimerDiv = document.getElementById('miniTimer');
+        const miniTimer = document.getElementById('miniTimer');
         const restOverlay = document.getElementById('restOverlay');
         const restTimerDisplay = document.getElementById('restTimerDisplay');
         
@@ -229,30 +235,27 @@
             return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
         }
         
-        // 更新右下角微型计时器显示
         function updateMiniTimer() {
             if (!isResting) {
-                miniTimerDiv.innerHTML = `⏳ ${formatTime(remainingWorkSeconds)}`;
-                miniTimerDiv.classList.remove('resting');
+                miniTimer.innerHTML = `⏳ ${formatTime(remainingWorkSeconds)}`;
             } else {
-                miniTimerDiv.innerHTML = `💤 ${formatTime(remainingRestSeconds)}`;
-                miniTimerDiv.classList.add('resting');
+                miniTimer.innerHTML = `💤 ${formatTime(remainingRestSeconds)}`;
             }
         }
         
-        // 更新遮罩层倒计时
         function updateRestOverlayTimer() {
             restTimerDisplay.innerText = formatTime(remainingRestSeconds);
         }
         
-        // 保存状态到 localStorage (包含时间戳)
+        // 保存状态到 localStorage
         function saveStateToLocal() {
             try {
                 const state = {
                     isResting: isResting,
                     remainingWorkSeconds: Math.max(0, remainingWorkSeconds),
                     remainingRestSeconds: Math.max(0, remainingRestSeconds),
-                    timestamp: Date.now()
+                    timestamp: Date.now(),
+                    targetUrl: TARGET_URL  // 记录目标网址，便于恢复时校验
                 };
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
             } catch(e) { console.warn("存储失败", e); }
@@ -310,13 +313,13 @@
             
             // 浏览器通知 (如果允许)
             if (Notification.permission === "granted") {
-                new Notification("🧘 休息提醒", { body: "已强制休息30分钟，请放松眼睛~", silent: false });
+                new Notification("🧘 休息提醒", { body: `已强制休息${REST_MINUTES}分钟，请放松眼睛~`, silent: false });
             } else if (Notification.permission !== "denied") {
                 Notification.requestPermission();
             }
         }
         
-        // ======================== 通用调度器 (兼顾工作与休息，每秒更新) ========================
+        // ======================== 通用调度器 (兼顾工作与休息) ========================
         function startUniversalScheduler() {
             clearAllTimers();
             
@@ -349,7 +352,7 @@
                 }
             }, 1000);
             
-            // 设置备用定时器 (保证准时触发)
+            // 设置备用定时器
             if (!isResting && remainingWorkSeconds > 0) {
                 workTimeoutId = setTimeout(() => {
                     if (!isResting) startRest();
@@ -367,13 +370,19 @@
             startUniversalScheduler();
         }
         
-        // ======================== 从 localStorage 恢复状态（考虑时间差） ========================
+        // ======================== 从 localStorage 恢复状态 ========================
         function recoverStateFromLocal() {
             const savedRaw = localStorage.getItem(STORAGE_KEY);
             if (!savedRaw) return false;
             
             try {
                 const saved = JSON.parse(savedRaw);
+                // 如果保存的目标网址与当前不同，则忽略旧状态（避免跨网站状态混淆）
+                if (saved.targetUrl && saved.targetUrl !== TARGET_URL) {
+                    console.log("目标网址已变化，忽略旧状态");
+                    return false;
+                }
+                
                 const now = Date.now();
                 const elapsedSeconds = Math.floor((now - (saved.timestamp || now)) / 1000);
                 let recoveredResting = saved.isResting === true;
@@ -384,10 +393,8 @@
                 if (isNaN(recoveredRestSec)) recoveredRestSec = REST_SECONDS;
                 
                 if (recoveredResting) {
-                    // 之前是休息状态，扣除经过的秒数
                     let newRestSec = recoveredRestSec - elapsedSeconds;
                     if (newRestSec <= 0) {
-                        // 休息已结束，转为工作状态
                         recoveredResting = false;
                         recoveredWorkSec = WORK_SECONDS;
                         recoveredRestSec = REST_SECONDS;
@@ -413,7 +420,6 @@
                 remainingWorkSeconds = recoveredWorkSec;
                 remainingRestSeconds = recoveredRestSec;
                 
-                // 根据恢复状态设置遮罩和计时器样式
                 if (isResting && remainingRestSeconds > 0) {
                     showOverlay();
                     updateRestOverlayTimer();
@@ -428,23 +434,23 @@
             }
         }
         
-        // ======================== 固定 iframe 内容并防止篡改 ========================
-        function setFixedIframe() {
-            iframe.src = FIXED_URL;
+        // ======================== 设置 iframe 内容 ========================
+        function setIframeUrl() {
+            iframe.src = TARGET_URL;
         }
         
-        // 轻度防护：定期检查并修复被篡改的链接
+        // 防止意外修改 iframe 的 src（轻度防护，避免用户通过控制台改掉）
         function lockIframeSrc() {
             setInterval(() => {
-                if (iframe.src !== FIXED_URL && !iframe.src.includes("cg.163.com")) {
-                    iframe.src = FIXED_URL;
+                if (iframe.src !== TARGET_URL && !iframe.src.includes(new URL(TARGET_URL).hostname)) {
+                    iframe.src = TARGET_URL;
                 }
             }, 3000);
         }
         
         // ======================== 初始化系统 ========================
         function init() {
-            setFixedIframe();
+            setIframeUrl();
             lockIframeSrc();
             
             const hasRecovered = recoverStateFromLocal();
@@ -462,19 +468,19 @@
                 startUniversalScheduler();
                 if (isResting && remainingRestSeconds > 0) showOverlay();
                 else hideOverlay();
-                saveStateToLocal();
                 updateMiniTimer();
+                saveStateToLocal();
             }
             
-            // 请求通知权限（静默）
+            // 请求通知权限
             if ("Notification" in window && Notification.permission === "default") {
                 Notification.requestPermission();
             }
             
-            console.log(`✅ 专注助手已启动 | 全屏内嵌 ${FIXED_URL} | 工作${WORK_MINUTES}分钟 / 休息${REST_MINUTES}分钟 | 右下角微型计时器 | 支持刷新恢复`);
+            console.log(`✅ 专注助手已启动，目标网址：${TARGET_URL}，每${WORK_MINUTES}分钟工作，强制休息${REST_MINUTES}分钟，支持刷新恢复计时`);
         }
         
-        // 页面关闭前清理定时器（优雅）
+        // 页面关闭前清理定时器
         window.addEventListener('beforeunload', () => {
             clearAllTimers();
         });
