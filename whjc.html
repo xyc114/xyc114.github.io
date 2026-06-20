@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>武魂觉醒 · 随机生成器</title>
+    <style>
+        :root {
+            --bg: #0a0a14;
+            --card-bg: rgba(16, 16, 30, 0.85);
+            --gold: #d4a843;
+            --gold-light: #f0d68a;
+            --gold-dark: #8b6914;
+            --text: #d0c8b8;
+            --text-light: #e8e0d0;
+            --text-muted: #a09888;
+            --border: rgba(180, 140, 60, 0.35);
+            --glow: rgba(200, 150, 50, 0.4);
+            --accent-purple: #7b4fa0;
+            --accent-red: #b84030;
+            --accent-blue: #4a7db0;
+            --accent-green: #5a8a50;
+            --accent-orange: #c07030;
+            --white-ring: #d8d8d8;
+            --yellow-ring: #e8c840;
+            --purple-ring: #8b50b8;
+            --black-ring: #1a1a1a;
+            --red-ring: #d04040;
+            --gold-ring: #e89830;
+            --quality-waste: #7a7a7a;
+            --quality-normal: #c8c8c8;
+            --quality-mid: #5cb85c;
+            --quality-high: #4a90d9;
+            --quality-top: #9b59b6;
+            --quality-super: #e87830;
+            --quality-god: #e8b830;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            font-family: 'STSong', 'Songti SC', 'Noto Serif SC', 'SimSun', 'KaiTi', 'STKaiti', '楷体', '华文楷体', 'Georgia', 'Times New Roman', serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* 粒子背景 */
+        #particleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* 主容器 */
+        .main-container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* 标题区域 */
+        .title-section {
+            text-align: center;
+            position: relative;
+        }
+        .title-section .subtitle-ornament {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 4px;
+        }
+        .subtitle-ornament .line {
+            width: 40px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+        }
+        .subtitle-ornament .diamond {
+            width: 8px;
+            height: 8px;
+            background: var(--gold-light);
+            transform: rotate(45deg);
+            box-shadow: 0 0 10px var(--glow);
+            animation: diamondPulse 2s ease-in-out infinite;
+        }
+        @keyframes diamondPulse {
+            0%,
+            100% {
+                box-shadow: 0 0 8px var(--glow);
+            }
+            50% {
+                box-shadow: 0 0 20px var(--glow), 0 0 35px rgba(220, 170, 60, 0.6);
+            }
+        }
+        .main-title {
+            font-size: clamp(2rem, 5vw, 2.8rem);
+            font-weight: bold;
+            letter-spacing: 0.15em;
+            background: linear-gradient(180deg, #f8e8b0 0%, #c8943e 30%, #8b5e20 60%, #d4a843 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: none;
+            filter: drop-shadow(0 2px 6px rgba(180, 120, 30, 0.5));
+            margin: 0;
+            line-height: 1.3;
+        }
+        .subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            letter-spacing: 0.2em;
+            margin-top: 2px;
+        }
+
+        /* 输入区域 */
+        .input-section {
+            width: 100%;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .name-input-wrapper {
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+        }
+        .name-input {
+            width: 100%;
+            padding: 14px 18px;
+            font-size: 1.1rem;
+            font-family: inherit;
+            letter-spacing: 0.08em;
+            background: rgba(20, 20, 40, 0.7);
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-light);
+            outline: none;
+            transition: all 0.35s ease;
+            caret-color: var(--gold);
+        }
+        .name-input::placeholder {
+            color: rgba(150, 140, 120, 0.5);
+            letter-spacing: 0.05em;
+        }
+        .name-input:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 20px rgba(200, 150, 50, 0.25), 0 0 40px rgba(200, 150, 50, 0.08);
+            background: rgba(18, 18, 38, 0.85);
+        }
+        .name-input:focus::placeholder {
+            color: rgba(150, 140, 120, 0.3);
+        }
+
+        /* 觉醒按钮 */
+        .awaken-btn {
+            padding: 14px 28px;
+            font-size: 1.1rem;
+            font-family: inherit;
+            letter-spacing: 0.12em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #3a2210 0%, #5a3820 30%, #8b5e20 60%, #6b4020 100%);
+            color: #f0d68a;
+            border: 1.5px solid rgba(200, 150, 50, 0.5);
+            border-radius: 8px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            text-shadow: 0 0 8px rgba(220, 170, 60, 0.5);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 220, 150, 0.1);
+        }
+        .awaken-btn:hover {
+            background: linear-gradient(135deg, #4a2a14 0%, #6b4024 30%, #9e6e28 60%, #7b4a24 100%);
+            border-color: rgba(230, 180, 60, 0.7);
+            box-shadow: 0 6px 25px rgba(200, 150, 40, 0.35), 0 0 50px rgba(200, 150, 40, 0.12);
+            color: #ffe8a0;
+            transform: translateY(-1px);
+        }
+        .awaken-btn:active {
+            transform: scale(0.96);
+            transition: transform 0.1s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+        .awaken-btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 220, 140, 0.25) 0%, transparent 60%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .awaken-btn:hover::after {
+            opacity: 1;
+        }
+        .awaken-btn .sparkle {
+            position: absolute;
+            pointer-events: none;
+        }
+
+        /* 觉醒闪光动画 */
+        @keyframes awakenFlash {
+            0% {
+                filter: brightness(1);
+            }
+            30% {
+                filter: brightness(2.5) saturate(1.5);
+            }
+            100% {
+                filter: brightness(1);
+            }
+        }
+        .awaken-btn.flashing {
+            animation: awakenFlash 0.5s ease-out;
+        }
+
+        /* 结果卡片 */
+        .result-card {
+            width: 100%;
+            background: var(--card-bg);
+            border: 1.5px solid var(--border);
+            border-radius: 14px;
+            padding: 24px 22px;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+        }
+        .result-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .result-card::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: 20px;
+            right: 20px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(220, 180, 80, 0.6), transparent);
+            border-radius: 50%;
+        }
+        .result-card .corner-ornament {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+        .result-card .corner-ornament.top-left {
+            top: 8px;
+            left: 8px;
+            border-top: 1px solid rgba(200, 160, 60, 0.4);
+            border-left: 1px solid rgba(200, 160, 60, 0.4);
+        }
+        .result-card .corner-ornament.top-right {
+            top: 8px;
+            right: 8px;
+            border-top: 1px solid rgba(200, 160, 60, 0.4);
+            border-right: 1px solid rgba(200, 160, 60, 0.4);
+        }
+        .result-card .corner-ornament.bottom-left {
+            bottom: 8px;
+            left: 8px;
+            border-bottom: 1px solid rgba(200, 160, 60, 0.4);
+            border-left: 1px solid rgba(200, 160, 60, 0.4);
+        }
+        .result-card .corner-ornament.bottom-right {
+            bottom: 8px;
+            right: 8px;
+            border-bottom: 1px solid rgba(200, 160, 60, 0.4);
+            border-right: 1px solid rgba(200, 160, 60, 0.4);
+        }
+
+        /* 武魂名称 */
+        .soul-name-display {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .soul-name-display .greeting {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            letter-spacing: 0.06em;
+            margin-bottom: 2px;
+        }
+        .soul-name-display .soul-name {
+            font-size: clamp(1.6rem, 4vw, 2.2rem);
+            font-weight: bold;
+            letter-spacing: 0.1em;
+            color: #f0d68a;
+            text-shadow: 0 0 20px rgba(200, 150, 40, 0.5);
+            line-height: 1.4;
+        }
+        .soul-name-display .dual-badge {
+            display: inline-block;
+            background: rgba(200, 60, 40, 0.2);
+            color: #f09080;
+            font-size: 0.75rem;
+            padding: 3px 10px;
+            border-radius: 20px;
+            letter-spacing: 0.1em;
+            border: 1px solid rgba(200, 80, 50, 0.4);
+            margin-left: 6px;
+            vertical-align: middle;
+            animation: dualGlow 2s ease-in-out infinite;
+        }
+        @keyframes dualGlow {
+            0%,
+            100% {
+                box-shadow: 0 0 8px rgba(220, 80, 50, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 18px rgba(220, 80, 50, 0.6);
+            }
+        }
+
+        /* 信息网格 */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px 16px;
+            margin: 16px 0;
+        }
+        @media (max-width: 420px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+        }
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            background: rgba(30, 30, 50, 0.5);
+            border-radius: 6px;
+            border: 1px solid rgba(100, 80, 50, 0.2);
+            font-size: 0.9rem;
+        }
+        .info-item .info-label {
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+            min-width: 50px;
+        }
+        .info-item .info-value {
+            color: var(--text-light);
+            font-weight: bold;
+            letter-spacing: 0.04em;
+            font-size: 0.9rem;
+        }
+        .info-item .quality-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            letter-spacing: 0.06em;
+            text-shadow: 0 0 6px currentColor;
+        }
+        .quality-waste {
+            color: #999;
+            background: rgba(120, 120, 120, 0.2);
+            border: 1px solid rgba(120, 120, 120, 0.3);
+            text-shadow: 0 0 6px rgba(150, 150, 150, 0.4);
+        }
+        .quality-normal {
+            color: #d0d0d0;
+            background: rgba(200, 200, 200, 0.15);
+            border: 1px solid rgba(200, 200, 200, 0.3);
+        }
+        .quality-mid {
+            color: #6cc86c;
+            background: rgba(90, 180, 90, 0.15);
+            border: 1px solid rgba(100, 200, 100, 0.35);
+            text-shadow: 0 0 8px rgba(100, 200, 100, 0.5);
+        }
+        .quality-high {
+            color: #5ca0e8;
+            background: rgba(70, 140, 220, 0.15);
+            border: 1px solid rgba(80, 150, 230, 0.35);
+            text-shadow: 0 0 8px rgba(80, 150, 230, 0.5);
+        }
+        .quality-top {
+            color: #b070d8;
+            background: rgba(140, 80, 200, 0.15);
+            border: 1px solid rgba(150, 90, 210, 0.35);
+            text-shadow: 0 0 10px rgba(150, 90, 210, 0.55);
+        }
+        .quality-super {
+            color: #f09040;
+            background: rgba(220, 120, 50, 0.15);
+            border: 1px solid rgba(230, 130, 60, 0.35);
+            text-shadow: 0 0 12px rgba(230, 130, 50, 0.6);
+            animation: superGlow 1.5s ease-in-out infinite;
+        }
+        @keyframes superGlow {
+            0%,
+            100% {
+                text-shadow: 0 0 10px rgba(230, 130, 50, 0.5);
+            }
+            50% {
+                text-shadow: 0 0 22px rgba(240, 150, 60, 0.8);
+            }
+        }
+        .quality-god {
+            color: #f8d840;
+            background: rgba(220, 170, 40, 0.2);
+            border: 1px solid rgba(240, 190, 50, 0.45);
+            text-shadow: 0 0 16px rgba(240, 200, 60, 0.75);
+            animation: godGlow 1.2s ease-in-out infinite;
+        }
+        @keyframes godGlow {
+            0%,
+            100% {
+                text-shadow: 0 0 14px rgba(240, 200, 60, 0.6);
+                box-shadow: 0 0 10px rgba(240, 190, 50, 0.3);
+            }
+            50% {
+                text-shadow: 0 0 30px rgba(250, 220, 80, 0.95);
+                box-shadow: 0 0 24px rgba(250, 210, 60, 0.5);
+            }
+        }
+
+        /* 魂环展示 */
+        .soul-rings-section {
+            margin: 14px 0;
+            text-align: center;
+        }
+        .soul-rings-section .rings-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            letter-spacing: 0.06em;
+            margin-bottom: 8px;
+        }
+        .rings-display {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .ring-circle {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 3px solid;
+            display: inline-block;
+            position: relative;
+            box-shadow: 0 0 10px currentColor;
+            transition: transform 0.3s;
+            flex-shrink: 0;
+        }
+        .ring-circle:hover {
+            transform: scale(1.35);
+            z-index: 2;
+        }
+        .ring-white {
+            border-color: #c8c8c8;
+            box-shadow: 0 0 8px rgba(200, 200, 200, 0.6), inset 0 0 6px rgba(200, 200, 200, 0.3);
+        }
+        .ring-yellow {
+            border-color: #e0b830;
+            box-shadow: 0 0 10px rgba(220, 180, 40, 0.7), inset 0 0 6px rgba(220, 180, 40, 0.3);
+        }
+        .ring-purple {
+            border-color: #8b40c0;
+            box-shadow: 0 0 10px rgba(140, 70, 190, 0.7), inset 0 0 6px rgba(140, 70, 190, 0.3);
+        }
+        .ring-black {
+            border-color: #1a1a1a;
+            box-shadow: 0 0 10px rgba(30, 30, 30, 0.8), inset 0 0 6px rgba(20, 20, 20, 0.5);
+            background: rgba(10, 10, 10, 0.6);
+        }
+        .ring-red {
+            border-color: #d03535;
+            box-shadow: 0 0 14px rgba(210, 50, 50, 0.8), inset 0 0 8px rgba(210, 50, 50, 0.4);
+            animation: redRingGlow 1.5s ease-in-out infinite;
+        }
+        @keyframes redRingGlow {
+            0%,
+            100% {
+                box-shadow: 0 0 12px rgba(210, 50, 50, 0.7);
+            }
+            50% {
+                box-shadow: 0 0 22px rgba(230, 60, 60, 0.95);
+            }
+        }
+        .ring-gold {
+            border-color: #e89830;
+            box-shadow: 0 0 18px rgba(235, 155, 40, 0.9), inset 0 0 8px rgba(240, 170, 50, 0.5);
+            animation: goldRingGlow 1s ease-in-out infinite;
+        }
+        @keyframes goldRingGlow {
+            0%,
+            100% {
+                box-shadow: 0 0 16px rgba(235, 155, 40, 0.75);
+            }
+            50% {
+                box-shadow: 0 0 28px rgba(250, 180, 60, 1);
+            }
+        }
+        .ring-legend {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            margin-top: 6px;
+            letter-spacing: 0.03em;
+        }
+        .ring-legend span {
+            margin: 0 4px;
+            cursor: default;
+        }
+
+        /* 魂技列表 */
+        .skills-section {
+            margin: 14px 0;
+            padding: 14px;
+            background: rgba(25, 25, 45, 0.5);
+            border-radius: 8px;
+            border: 1px solid rgba(100, 80, 50, 0.2);
+        }
+        .skills-section .skills-title {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            letter-spacing: 0.08em;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .skill-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 7px 0;
+            font-size: 0.85rem;
+            color: var(--text-light);
+            border-bottom: 1px dotted rgba(100, 80, 50, 0.15);
+            letter-spacing: 0.03em;
+        }
+        .skill-item:last-child {
+            border-bottom: none;
+        }
+        .skill-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            border: 2px solid;
+        }
+
+        /* 双生武魂第二武魂 */
+        .second-soul {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 2px dashed rgba(180, 140, 60, 0.35);
+            position: relative;
+        }
+        .second-soul::before {
+            content: '⚡ 第二武魂 ⚡';
+            position: absolute;
+            top: -11px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--card-bg);
+            padding: 2px 14px;
+            font-size: 0.75rem;
+            color: #e89840;
+            letter-spacing: 0.08em;
+            white-space: nowrap;
+            border-radius: 10px;
+            border: 1px solid rgba(220, 150, 50, 0.4);
+        }
+
+        /* 底部按钮 */
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .secondary-btn {
+            padding: 10px 18px;
+            font-size: 0.85rem;
+            font-family: inherit;
+            letter-spacing: 0.06em;
+            background: rgba(30, 30, 50, 0.6);
+            border: 1px solid rgba(140, 120, 80, 0.35);
+            border-radius: 6px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .secondary-btn:hover {
+            border-color: rgba(200, 160, 80, 0.6);
+            color: var(--text-light);
+            background: rgba(40, 35, 55, 0.7);
+            box-shadow: 0 0 15px rgba(180, 140, 50, 0.2);
+        }
+        .secondary-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Toast提示 */
+        .toast {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-120px);
+            background: rgba(30, 25, 20, 0.9);
+            color: #f0d68a;
+            padding: 10px 22px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            letter-spacing: 0.06em;
+            border: 1px solid rgba(200, 150, 50, 0.5);
+            z-index: 100;
+            pointer-events: none;
+            transition: transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 480px) {
+            .main-container {
+                padding: 14px;
+                gap: 14px;
+            }
+            .result-card {
+                padding: 16px 12px;
+                border-radius: 10px;
+            }
+            .info-item {
+                padding: 8px 10px;
+                font-size: 0.8rem;
+            }
+            .ring-circle {
+                width: 22px;
+                height: 22px;
+                border-width: 2.5px;
+            }
+            .rings-display {
+                gap: 4px;
+            }
+            .name-input {
+                padding: 12px 14px;
+                font-size: 1rem;
+            }
+            .awaken-btn {
+                padding: 12px 20px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 粒子背景画布 -->
+    <canvas id="particleCanvas"></canvas>
+
+    <!-- Toast提示 -->
+    <div class="toast" id="toast"></div>
+
+    <!-- 主容器 -->
+    <div class="main-container">
+        <!-- 标题 -->
+        <div class="title-section">
+            <div class="subtitle-ornament">
+                <span class="line"></span>
+                <span class="diamond"></span>
+                <span class="line"></span>
+            </div>
+            <h1 class="main-title">武 魂 觉 醒</h1>
+            <p class="subtitle">— 命定之魂 · 随名而现 —</p>
+        </div>
+
+        <!-- 输入区 -->
+        <div class="input-section">
+            <div class="name-input-wrapper">
+                <input
+                type="text"
+                class="name-input"
+                id="nameInput"
+                placeholder="请输入你的名字..."
+                maxlength="20"
+                autocomplete="off"
+                >
+            </div>
+            <button class="awaken-btn" id="awakenBtn" title="觉醒武魂">
+                ✦ 觉 醒 ✦
+            </button>
+        </div>
+
+        <!-- 结果卡片 -->
+        <div class="result-card" id="resultCard">
+            <div class="corner-ornament top-left"></div>
+            <div class="corner-ornament top-right"></div>
+            <div class="corner-ornament bottom-left"></div>
+            <div class="corner-ornament bottom-right"></div>
+            <div id="resultContent">
+                <!-- 动态填充 -->
+            </div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="action-buttons" id="actionButtons" style="display:none;">
+            <button class="secondary-btn" id="copyBtn">📋 复制结果</button>
+            <button class="secondary-btn" id="reawakenBtn">🔄 重新觉醒</button>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // ============ DOM 元素 ============
+            const nameInput = document.getElementById('nameInput');
+            const awakenBtn = document.getElementById('awakenBtn');
+            const resultCard = document.getElementById('resultCard');
+            const resultContent = document.getElementById('resultContent');
+            const actionButtons = document.getElementById('actionButtons');
+            const copyBtn = document.getElementById('copyBtn');
+            const reawakenBtn = document.getElementById('reawakenBtn');
+            const toast = document.getElementById('toast');
+            const canvas = document.getElementById('particleCanvas');
+            const ctx = canvas.getContext('2d');
+
+            // ============ 粒子背景 ============
+            let particles = [];
+            const PARTICLE_COUNT = 60;
+
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            resizeCanvas();
+            window.addEventListener('resize', () => {
+                resizeCanvas();
+                initParticles();
+            });
+
+            function initParticles() {
+                particles = [];
+                for (let i = 0; i < PARTICLE_COUNT; i++) {
+                    particles.push({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * canvas.height,
+                        r: Math.random() * 2.2 + 0.6,
+                        vx: (Math.random() - 0.5) * 0.35,
+                        vy: (Math.random() - 0.5) * 0.35 - 0.2,
+                        alpha: Math.random() * 0.5 + 0.2,
+                        alphaSpeed: (Math.random() - 0.5) * 0.008,
+                        hue: 35 + Math.random() * 25, // 金色调
+                    });
+                }
+            }
+            initParticles();
+
+            function animateParticles() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.alpha += p.alphaSpeed;
+
+                    // 边界回弹
+                    if (p.x < 0) { p.x = 0;
+                        p.vx *= -1; }
+                    if (p.x > canvas.width) { p.x = canvas.width;
+                        p.vx *= -1; }
+                    if (p.y < 0) { p.y = 0;
+                        p.vy *= -1; }
+                    if (p.y > canvas.height) { p.y = canvas.height;
+                        p.vy *= -1; }
+
+                    // alpha范围限制
+                    if (p.alpha < 0.08) p.alphaSpeed = Math.abs(p.alphaSpeed);
+                    if (p.alpha > 0.65) p.alphaSpeed = -Math.abs(p.alphaSpeed);
+
+                    // 绘制粒子
+                    const hue = p.hue;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    ctx.fillStyle = `hsla(${hue}, 70%, 65%, ${p.alpha})`;
+                    ctx.fill();
+
+                    // 发光效果
+                    const glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 3);
+                    glow.addColorStop(0, `hsla(${hue}, 80%, 70%, ${p.alpha * 0.6})`);
+                    glow.addColorStop(1, 'transparent');
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r * 3, 0, Math.PI * 2);
+                    ctx.fillStyle = glow;
+                    ctx.fill();
+                });
+                requestAnimationFrame(animateParticles);
+            }
+            animateParticles();
+
+            // ============ 伪随机数生成器（基于名字种子） ============
+            function hashString(str) {
+                let hash = 0;
+                for (let i = 0; i < str.length; i++) {
+                    const char = str.charCodeAt(i);
+                    hash = ((hash << 5) - hash) + char;
+                    hash = hash & 0x7fffffff; // 保持正数
+                }
+                return hash;
+            }
+
+            function createSeededRandom(seed) {
+                let s = seed;
+                return function() {
+                    s = (s * 1103515245 + 12345) & 0x7fffffff;
+                    return s / 0x7fffffff;
+                };
+            }
+
+            // ============ 数据池 ============
+            const SOUL_TYPES = {
+                beast: {
+                    name: '兽武魂',
+                    names: [
+                        '蓝电霸王龙', '白虎', '幽冥灵猫', '凤凰', '玄武', '青龙', '麒麟', '饕餮',
+                        '九尾狐', '金翅大鹏', '地狱魔狼', '冰霜巨龙', '烈焰雄狮', '紫电貂',
+                        '天青牛蟒', '暗影猎豹', '八岐大蛇', '黄金狮鹫', '雷霆巨猿', '冰凤',
+                        '赤焰狂狮', '银月狼王', '碧磷蛇皇', '金刚巨熊', '风暴翼龙', '玄冰蝎',
+                        '噬魂蛛皇', '裂空鹰', '深海魔鲸', '熔岩巨龟', '紫晶翼狮', '苍狼',
+                        '天雷虎', '幽影豹', '血瞳魔狼', '冰甲角蟒', '炽焰凤凰', '霜狼',
+                    ],
+                },
+                tool: {
+                    name: '器武魂',
+                    names: [
+                        '昊天锤', '七杀剑', '海神三叉戟', '修罗魔剑', '天使圣剑', '破魂枪',
+                        '九宝琉璃塔', '七星龙渊剑', '噬魂幡', '霸王枪', '玄天尺', '镇魂钟',
+                        '碎星弓', '裂空鞭', '裁决之刃', '霜寒剑', '焚天炉', '雷霆之锤',
+                        '暗影匕首', '圣光权杖', '血煞刀', '天罡斧', '幻灵琴', '星辰法杖',
+                        '破魔弓', '龙纹戟', '封天印', '阴阳镜', '乾坤扇', '诛仙剑',
+                    ],
+                },
+                plant: {
+                    name: '植物武魂',
+                    names: [
+                        '蓝银草', '九心海棠', '绮罗郁金香', '幽冥灵猫柳', '星辰树', '血荆棘',
+                        '冰火两仪花', '七彩灵参', '鬼藤', '月光兰', '噬魂花', '天香豆蔻',
+                        '龙血树', '幻灵菇', '金线莲', '紫云藤', '寒冰苔', '烈焰葵',
+                        '暗影藤蔓', '圣光莲', '雷击木', '风铃草', '万毒花', '长生柳',
+                    ],
+                },
+                element: {
+                    name: '元素武魂',
+                    names: [
+                        '烈焰', '寒冰', '雷霆', '风暴', '大地之心', '光明之灵', '暗影之核',
+                        '时空裂隙', '熔岩', '冰霜', '天雷', '飓风之眼', '星辰之力',
+                        '虚无', '混沌', '极光', '岩浆', '玄冰', '紫电', '青焰',
+                    ],
+                },
+                special: {
+                    name: '特殊武魂',
+                    names: [
+                        '六翼天使', '死神之镰', '生命女神', '命运之轮', '空间之刃', '时间沙漏',
+                        '星辰之眼', '幻梦境', '轮回盘', '因果锁链', '灵魂之灯', '虚空之门',
+                        '造化玉碟', '灭世黑莲', '创世之光', '永恒之钟', '审判天平',
+                    ],
+                },
+                dark: {
+                    name: '黑暗武魂',
+                    names: [
+                        '邪眸', '死亡之眼', '暗黑魔龙', '血魔', '冥王剑', '诅咒之书',
+                        '深渊触手', '亡灵骨龙', '噬心鬼', '永夜之幕', '灾厄之刃', '枯萎之息',
+                    ],
+                },
+                light: {
+                    name: '光明武魂',
+                    names: [
+                        '神圣天使', '光明凤凰', '圣光独角兽', '审判之剑', '净化之炎',
+                        '晨曦之光', '天罚之矛', '慈悲之盾', '荣耀之冠', '圣歌之铃',
+                    ],
+                },
+            };
+
+            const QUALITIES = ['废武魂', '普通武魂', '中级武魂', '高级武魂', '顶级武魂', '超级武魂', '神级武魂'];
+            const QUALITY_CSS = ['quality-waste', 'quality-normal', 'quality-mid', 'quality-high', 'quality-top',
+                'quality-super', 'quality-god'
+            ];
+            const QUALITY_WEIGHTS = [4, 22, 28, 22, 14, 7, 3]; // 权重分布
+
+            const SOUL_RANKS = [
+                { name: '魂士', minLevel: 1, maxLevel: 10, maxRings: 0 },
+                { name: '魂师', minLevel: 11, maxLevel: 20, maxRings: 1 },
+                { name: '大魂师', minLevel: 21, maxLevel: 30, maxRings: 2 },
+                { name: '魂尊', minLevel: 31, maxLevel: 40, maxRings: 3 },
+                { name: '魂宗', minLevel: 41, maxLevel: 50, maxRings: 4 },
+                { name: '魂王', minLevel: 51, maxLevel: 60, maxRings: 5 },
+                { name: '魂帝', minLevel: 61, maxLevel: 70, maxRings: 6 },
+                { name: '魂圣', minLevel: 71, maxLevel: 80, maxRings: 7 },
+                { name: '魂斗罗', minLevel: 81, maxLevel: 90, maxRings: 8 },
+                { name: '封号斗罗', minLevel: 91, maxLevel: 95, maxRings: 9 },
+                { name: '超级斗罗', minLevel: 96, maxLevel: 99, maxRings: 9 },
+                { name: '极限斗罗', minLevel: 99, maxLevel: 100, maxRings: 9 },
+                { name: '神级', minLevel: 101, maxLevel: 150, maxRings: 10 },
+            ];
+
+            const RING_COLORS = ['white', 'yellow', 'purple', 'black', 'red', 'gold'];
+            const RING_COLOR_NAMES = ['十年(白)', '百年(黄)', '千年(紫)', '万年(黑)', '十万年(红)', '百万年(金)'];
+            const RING_CSS_CLASSES = ['ring-white', 'ring-yellow', 'ring-purple', 'ring-black', 'ring-red', 'ring-gold'];
+
+            // 魂技名称模板
+            const SKILL_PREFIXES_BEAST = ['狂暴', '撕裂', '咆哮', '附体', '冲击', '裂地', '震天', '嗜血', '疾风', '雷霆',
+                '冰霜', '烈焰', '暗影', '神圣', '毁灭'
+            ];
+            const SKILL_SUFFIXES_BEAST = ['之爪', '之牙', '之翼', '冲击', '怒吼', '猛击', '撕咬', '践踏', '甩尾', '冲锋',
+                '守护', '降临', '真身'
+            ];
+            const SKILL_PREFIXES_TOOL = ['破灭', '裂空', '横扫', '天罚', '裁决', '碎星', '斩魂', '崩山', '断江', '焚天',
+                '冰封', '雷击', '风暴', '光影', '虚空'
+            ];
+            const SKILL_SUFFIXES_TOOL = ['斩', '刺', '劈', '扫', '击', '破', '舞', '诀', '式', '阵', '域', '杀',
+            '灭'];
+            const SKILL_PREFIXES_PLANT = ['缠绕', '寄生', '毒雾', '治愈', '荆棘', '藤蔓', '花雨', '孢子', '根缚', '叶刃',
+                '花粉', '树界'
+            ];
+            const SKILL_SUFFIXES_PLANT = ['之舞', '之阵', '牢笼', '突刺', '蔓延', '绽放', '凋零', '生长', '屏障', '领域'];
+            const SKILL_PREFIXES_ELEMENT = ['焚天', '冰封', '雷霆', '风暴', '陨石', '极光', '暗蚀', '光耀', '时空', '混沌',
+                '虚无', '熔岩'
+            ];
+            const SKILL_SUFFIXES_ELEMENT = ['之怒', '降临', '冲击', '漩涡', '爆裂', '射线', '领域', '风暴', '斩', '灭',
+            '咆哮'];
+
+            // 封号用字
+            const TITLE_CHARS = ['龙', '凤', '虎', '剑', '枪', '冰', '火', '雷', '风', '影', '光', '暗', '星', '海', '天',
+                '地', '血', '冥', '圣', '魔', '战', '灵', '魂', '骨', '毒', '幻', '空', '时', '霜', '炎', '铁', '钢',
+                '狂', '傲', '幽', '玄', '青', '赤', '金', '银', '月', '日', '云', '雪', '岚', '岩', '刃', '羽'
+            ];
+
+            // ============ 加权随机选择 ============
+            function weightedRandom(rand, weights) {
+                const total = weights.reduce((a, b) => a + b, 0);
+                let r = rand() * total;
+                for (let i = 0; i < weights.length; i++) {
+                    r -= weights[i];
+                    if (r <= 0) return i;
+                }
+                return weights.length - 1;
+            }
+
+            function randomFromArray(rand, arr) {
+                return arr[Math.floor(rand() * arr.length)];
+            }
+
+            function randomInt(rand, min, max) {
+                return Math.floor(rand() * (max - min + 1)) + min;
+            }
+
+            // ============ 生成武魂数据 ============
+            function generateSoulData(name) {
+                const seed = hashString(name.trim() || '无名');
+                const rand = createSeededRandom(seed);
+
+                // 双生武魂判定 (约2.5%概率)
+                const isDual = rand() < 0.025;
+
+                function generateSingleSoul(randLocal) {
+                    // 选择武魂类型
+                    const typeKeys = Object.keys(SOUL_TYPES);
+                    const typeKey = randomFromArray(randLocal, typeKeys);
+                    const typeData = SOUL_TYPES[typeKey];
+                    const soulName = randomFromArray(randLocal, typeData.names);
+
+                    // 选择品质
+                    const qualityIndex = weightedRandom(randLocal, QUALITY_WEIGHTS);
+                    const quality = QUALITIES[qualityIndex];
+                    const qualityCss = QUALITY_CSS[qualityIndex];
+
+                    // 先天魂力 (0-10)
+                    let innateSoulPower;
+                    if (qualityIndex >= 6) innateSoulPower = randomInt(randLocal, 9, 10); // 神级
+                    else if (qualityIndex >= 5) innateSoulPower = randomInt(randLocal, 7, 10); // 超级
+                    else if (qualityIndex >= 4) innateSoulPower = randomInt(randLocal, 5, 9); // 顶级
+                    else if (qualityIndex >= 3) innateSoulPower = randomInt(randLocal, 3, 7); // 高级
+                    else if (qualityIndex >= 2) innateSoulPower = randomInt(randLocal, 1, 5); // 中级
+                    else if (qualityIndex >= 1) innateSoulPower = randomInt(randLocal, 0, 3); // 普通
+                    else innateSoulPower = randomInt(randLocal, 0, 1); // 废武魂
+
+                    // 魂力等级 (基于品质和先天魂力)
+                    const baseRankRoll = randLocal();
+                    let rankIndex;
+                    if (qualityIndex >= 6) rankIndex = randomInt(randLocal, 9, SOUL_RANKS.length - 1);
+                    else if (qualityIndex >= 5) rankIndex = randomInt(randLocal, 7, 10);
+                    else if (qualityIndex >= 4) rankIndex = randomInt(randLocal, 5, 9);
+                    else if (qualityIndex >= 3) rankIndex = randomInt(randLocal, 3, 7);
+                    else if (qualityIndex >= 2) rankIndex = randomInt(randLocal, 1, 5);
+                    else if (qualityIndex >= 1) rankIndex = randomInt(randLocal, 0, 3);
+                    else rankIndex = randomInt(randLocal, 0, 1);
+
+                    const rankData = SOUL_RANKS[rankIndex];
+                    const soulLevel = randomInt(randLocal, rankData.minLevel, rankData.maxLevel);
+
+                    // 魂环配置
+                    const ringCount = rankData.maxRings;
+                    const rings = [];
+                    for (let i = 0; i < ringCount; i++) {
+                        let ringColorIndex;
+                        if (rankIndex >= 11) {
+                            // 神级：可能有百万年魂环
+                            ringColorIndex = weightedRandom(randLocal, [5, 15, 20, 25, 25, 10]);
+                        } else if (rankIndex >= 9) {
+                            // 封号斗罗以上：至少一个十万年
+                            if (i === ringCount - 1 && rings.filter(r => r >= 4).length === 0) {
+                                ringColorIndex = randomInt(randLocal, 4, 5);
+                            } else {
+                                ringColorIndex = weightedRandom(randLocal, [8, 18, 25, 28, 18, 3]);
+                            }
+                        } else if (rankIndex >= 7) {
+                            ringColorIndex = weightedRandom(randLocal, [12, 22, 28, 28, 9, 1]);
+                        } else if (rankIndex >= 5) {
+                            ringColorIndex = weightedRandom(randLocal, [18, 28, 30, 20, 4, 0]);
+                        } else if (rankIndex >= 3) {
+                            ringColorIndex = weightedRandom(randLocal, [25, 35, 28, 12, 0, 0]);
+                        } else if (rankIndex >= 1) {
+                            ringColorIndex = weightedRandom(randLocal, [45, 40, 14, 1, 0, 0]);
+                        } else {
+                            ringColorIndex = 0; // 无魂环或仅白色
+                        }
+                        ringColorIndex = Math.min(ringColorIndex, RING_COLORS.length - 1);
+                        rings.push(ringColorIndex);
+                    }
+                    // 按年份升序排列（从低到高）
+                    rings.sort((a, b) => a - b);
+
+                    // 生成魂技
+                    const skills = [];
+                    for (let i = 0; i < rings.length; i++) {
+                        let prefixPool, suffixPool;
+                        if (typeKey === 'beast') { prefixPool = SKILL_PREFIXES_BEAST;
+                            suffixPool = SKILL_SUFFIXES_BEAST; } else if (typeKey === 'tool') { prefixPool =
+                                SKILL_PREFIXES_TOOL;
+                            suffixPool = SKILL_SUFFIXES_TOOL; } else if (typeKey === 'plant') { prefixPool =
+                                SKILL_PREFIXES_PLANT;
+                            suffixPool = SKILL_SUFFIXES_PLANT; } else if (typeKey === 'element') { prefixPool =
+                                SKILL_PREFIXES_ELEMENT;
+                            suffixPool = SKILL_SUFFIXES_ELEMENT; } else { prefixPool = [...SKILL_PREFIXES_BEAST, ...
+                                SKILL_PREFIXES_ELEMENT
+                            ];
+                            suffixPool = [...SKILL_SUFFIXES_BEAST, ...SKILL_SUFFIXES_ELEMENT]; }
+                        const skillName = randomFromArray(randLocal, prefixPool) + randomFromArray(randLocal,
+                        suffixPool);
+                        skills.push({ name: skillName, ringIndex: rings[i] });
+                    }
+
+                    // 封号（仅封号斗罗及以上）
+                    let title = null;
+                    if (rankIndex >= 9 && rankIndex < 11) {
+                        const titleChar = randomFromArray(randLocal, TITLE_CHARS);
+                        title = titleChar + '斗罗';
+                    } else if (rankIndex >= 11) {
+                        const titleChar = randomFromArray(randLocal, TITLE_CHARS);
+                        title = titleChar + '之神';
+                    }
+
+                    return {
+                        typeName: typeData.name,
+                        typeKey: typeKey,
+                        soulName: soulName,
+                        quality: quality,
+                        qualityIndex: qualityIndex,
+                        qualityCss: qualityCss,
+                        innateSoulPower: innateSoulPower,
+                        rankName: rankData.name,
+                        rankIndex: rankIndex,
+                        soulLevel: soulLevel,
+                        rings: rings,
+                        skills: skills,
+                        title: title,
+                    };
+                }
+
+                const primarySoul = generateSingleSoul(rand);
+                let secondarySoul = null;
+                if (isDual) {
+                    // 第二武魂使用不同的随机序列
+                    const seed2 = hashString(name.trim() + '_dual');
+                    const rand2 = createSeededRandom(seed2);
+                    secondarySoul = generateSingleSoul(rand2);
+                    // 第二武魂品质至少为高级
+                    if (secondarySoul.qualityIndex < 3) {
+                        secondarySoul.qualityIndex = randomInt(rand2, 3, 6);
+                        secondarySoul.quality = QUALITIES[secondarySoul.qualityIndex];
+                        secondarySoul.qualityCss = QUALITY_CSS[secondarySoul.qualityIndex];
+                    }
+                }
+
+                return {
+                    name: name.trim() || '无名',
+                    primarySoul,
+                    secondarySoul,
+                    isDual,
+                };
+            }
+
+            // ============ 渲染结果 ============
+            function renderSoulHTML(soulData, label) {
+                const ringHTML = soulData.rings.map((rIdx, i) => {
+                    const cssClass = RING_CSS_CLASSES[rIdx];
+                    const colorName = RING_COLOR_NAMES[rIdx];
+                    return `<span class="ring-circle ${cssClass}" title="第${i + 1}魂环：${colorName}" style="animation-delay:${i * 0.08}s;"></span>`;
+                }).join('');
+
+                const skillsHTML = soulData.skills.map((sk, i) => {
+                    const dotClass = RING_CSS_CLASSES[sk.ringIndex];
+                    return `
+                        <div class="skill-item">
+                            <span class="skill-dot ${dotClass}"></span>
+                            <span>第${i + 1}魂技：<strong>${sk.name}</strong></span>
+                            <span style="font-size:0.7rem;color:var(--text-muted);margin-left:auto;">${RING_COLOR_NAMES[sk.ringIndex]}</span>
+                        </div>`;
+                }).join('');
+
+                const titleHTML = soulData.title ?
+                    `<div class="info-item"><span class="info-label">封号</span><span class="info-value" style="color:#f0d68a;text-shadow:0 0 10px rgba(220,170,50,0.5);">${soulData.title}</span></div>` :
+                    '';
+
+                return `
+                    <div class="soul-name-display">
+                        <div class="greeting">${label}</div>
+                        <div class="soul-name">「${soulData.soulName}」</div>
+                    </div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">类型</span>
+                            <span class="info-value">${soulData.typeName}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">品质</span>
+                            <span class="quality-badge ${soulData.qualityCss}">${soulData.quality}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">先天魂力</span>
+                            <span class="info-value" style="color:${soulData.innateSoulPower >= 9 ? '#f8d840' : soulData.innateSoulPower >= 7 ? '#e89830' : 'var(--text-light)'};">${soulData.innateSoulPower} 级${soulData.innateSoulPower >= 10 ? ' (先天满魂力!)' : ''}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">魂力等级</span>
+                            <span class="info-value">${soulData.soulLevel} 级 · ${soulData.rankName}</span>
+                        </div>
+                        ${titleHTML}
+                    </div>
+                    <div class="soul-rings-section">
+                        <div class="rings-label">🔮 魂环配置 (共 ${soulData.rings.length} 环)</div>
+                        <div class="rings-display">${ringHTML || '<span style="color:var(--text-muted);font-size:0.8rem;">暂无魂环</span>'}</div>
+                        <div class="ring-legend">
+                            ${RING_COLOR_NAMES.map((name, i) => `<span style="color:${['#c8c8c8','#e0b830','#8b40c0','#555','#d03535','#e89830'][i]};font-size:0.65rem;">●${name}</span>`).join(' ')}
+                        </div>
+                    </div>
+                    ${soulData.skills.length > 0 ? `
+                    <div class="skills-section">
+                        <div class="skills-title">⚔️ 魂技列表</div>
+                        ${skillsHTML}
+                    </div>` : ''}
+                `;
+            }
+
+            function renderFullResult(data) {
+                let html = renderSoulHTML(data.primarySoul, data.name + ' 的武魂');
+                if (data.isDual && data.secondarySoul) {
+                    html += '<div class="second-soul">';
+                    html += renderSoulHTML(data.secondarySoul, '第二武魂');
+                    html += '</div>';
+                }
+                return html;
+            }
+
+            // ============ 显示结果 ============
+            function showResult(data) {
+                resultContent.innerHTML = renderFullResult(data);
+                resultCard.classList.add('visible');
+                actionButtons.style.display = 'flex';
+                // 滚动到卡片
+                setTimeout(() => {
+                    resultCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 200);
+            }
+
+            function hideResult() {
+                resultCard.classList.remove('visible');
+                actionButtons.style.display = 'none';
+                resultContent.innerHTML = '';
+            }
+
+            // ============ Toast ============
+            let toastTimer;
+            function showToast(msg) {
+                clearTimeout(toastTimer);
+                toast.textContent = msg;
+                toast.classList.add('show');
+                toastTimer = setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 2000);
+            }
+
+            // ============ 觉醒动作 ============
+            function performAwaken() {
+                const name = nameInput.value.trim();
+                if (!name) {
+                    showToast('请先输入你的名字 ✨');
+                    nameInput.focus();
+                    nameInput.style.borderColor = 'rgba(220,100,60,0.7)';
+                    nameInput.style.boxShadow = '0 0 16px rgba(220,100,50,0.3)';
+                    setTimeout(() => {
+                        nameInput.style.borderColor = 'var(--border)';
+                        nameInput.style.boxShadow = 'none';
+                    }, 800);
+                    return;
+                }
+
+                // 按钮闪光动画
+                awakenBtn.classList.add('flashing');
+                setTimeout(() => awakenBtn.classList.remove('flashing'), 500);
+
+                // 隐藏旧结果
+                hideResult();
+
+                // 生成数据
+                const data = generateSoulData(name);
+
+                // 延迟显示（模拟觉醒过程）
+                setTimeout(() => {
+                    showResult(data);
+                    // 粒子爆发效果（临时增加粒子）
+                    spawnBurstParticles();
+                }, 350);
+            }
+
+            // 粒子爆发
+            function spawnBurstParticles() {
+                const burstCount = 25;
+                const cx = window.innerWidth / 2;
+                const cy = window.innerHeight / 2;
+                for (let i = 0; i < burstCount; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = Math.random() * 3 + 2;
+                    particles.push({
+                        x: cx + (Math.random() - 0.5) * 200,
+                        y: cy + (Math.random() - 0.5) * 200,
+                        r: Math.random() * 3 + 1.5,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed,
+                        alpha: Math.random() * 0.7 + 0.3,
+                        alphaSpeed: -0.015 - Math.random() * 0.03,
+                        hue: 35 + Math.random() * 30,
+                    });
+                }
+                // 限制粒子总数
+                if (particles.length > 150) {
+                    particles = particles.slice(-120);
+                }
+            }
+
+            // ============ 事件监听 ============
+            awakenBtn.addEventListener('click', performAwaken);
+
+            nameInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    performAwaken();
+                }
+            });
+
+            reawakenBtn.addEventListener('click', () => {
+                // 为名字添加微小变化以生成不同结果
+                const currentName = nameInput.value.trim();
+                if (currentName) {
+                    // 在名字后添加不可见零宽字符来改变种子，但对用户透明
+                    const now = Date.now();
+                    const seedSuffix = String.fromCharCode(0x200B) + (now % 10000);
+                    // 实际上我们直接重新生成，因为种子基于名字，
+                    // 同一名字结果相同。这里提示用户微调名字
+                    hideResult();
+                    setTimeout(() => {
+                        const data = generateSoulData(currentName);
+                        showResult(data);
+                        spawnBurstParticles();
+                        showToast('武魂重新觉醒！试试修改名字获取不同结果~');
+                    }, 300);
+                } else {
+                    showToast('请先输入名字再觉醒 ✨');
+                }
+            });
+
+            copyBtn.addEventListener('click', () => {
+                const data = generateSoulData(nameInput.value.trim() || '无名');
+                let text = `【${data.name} 的武魂觉醒结果】\n\n`;
+                text += `武魂：${data.primarySoul.soulName}\n`;
+                text += `类型：${data.primarySoul.typeName}\n`;
+                text += `品质：${data.primarySoul.quality}\n`;
+                text += `先天魂力：${data.primarySoul.innateSoulPower}级\n`;
+                text += `魂力等级：${data.primarySoul.soulLevel}级 · ${data.primarySoul.rankName}\n`;
+                if (data.primarySoul.title) text += `封号：${data.primarySoul.title}\n`;
+                text += `魂环：${data.primarySoul.rings.map(r => RING_COLOR_NAMES[r]).join('、')}\n`;
+                if (data.primarySoul.skills.length > 0) {
+                    text += `魂技：${data.primarySoul.skills.map((s, i) => `第${i + 1}魂技-${s.name}`).join('、')}\n`;
+                }
+                if (data.isDual && data.secondarySoul) {
+                    text += `\n【第二武魂】\n`;
+                    text += `武魂：${data.secondarySoul.soulName}\n`;
+                    text += `类型：${data.secondarySoul.typeName}\n`;
+                    text += `品质：${data.secondarySoul.quality}\n`;
+                    text += `魂力等级：${data.secondarySoul.soulLevel}级 · ${data.secondarySoul.rankName}\n`;
+                }
+
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(() => {
+                        showToast('✅ 武魂信息已复制到剪贴板！');
+                    }).catch(() => {
+                        fallbackCopy(text);
+                    });
+                } else {
+                    fallbackCopy(text);
+                }
+            });
+
+            function fallbackCopy(text) {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    showToast('✅ 武魂信息已复制到剪贴板！');
+                } catch (e) {
+                    showToast('⚠️ 复制失败，请手动选择文字复制');
+                }
+                document.body.removeChild(textarea);
+            }
+
+            // ============ 初始演示 ============
+            // 页面加载后自动演示一个示例
+            setTimeout(() => {
+                if (!nameInput.value.trim()) {
+                    nameInput.value = '唐三';
+                    performAwaken();
+                }
+            }, 600);
+
+            // ============ 输入框聚焦时清空演示 ============
+            nameInput.addEventListener('focus', function() {
+                if (this.value === '唐三' && resultCard.classList.contains('visible')) {
+                    // 保持演示结果，不清除
+                }
+            });
+
+            console.log('🌟 武魂觉醒生成器已就绪');
+            console.log('  输入名字，点击"觉醒"按钮来生成你的专属武魂吧！');
+            console.log('  同一名字会生成相同的武魂结果（命运注定）');
+            console.log('  试试修改名字来探索不同的武魂吧~');
+            console.log('  💎 小概率可出现双生武魂或神级武魂哦！');
+        })();
+    </script>
+</body>
+</html>
