@@ -3,30 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>武魂觉醒 · 随机生成器</title>
+    <title>武魂觉醒 · 随机生成器（增强版）</title>
     <style>
         :root {
             --bg: #0a0a14;
-            --card-bg: rgba(16, 16, 30, 0.85);
+            --card-bg: rgba(16, 16, 30, 0.88);
             --gold: #d4a843;
             --gold-light: #f0d68a;
-            --gold-dark: #8b6914;
             --text: #d0c8b8;
             --text-light: #e8e0d0;
             --text-muted: #a09888;
             --border: rgba(180, 140, 60, 0.35);
             --glow: rgba(200, 150, 50, 0.4);
-            --accent-purple: #7b4fa0;
-            --accent-red: #b84030;
-            --accent-blue: #4a7db0;
-            --accent-green: #5a8a50;
-            --accent-orange: #c07030;
-            --white-ring: #d8d8d8;
-            --yellow-ring: #e8c840;
-            --purple-ring: #8b50b8;
-            --black-ring: #1a1a1a;
-            --red-ring: #d04040;
-            --gold-ring: #e89830;
             --quality-waste: #7a7a7a;
             --quality-normal: #c8c8c8;
             --quality-mid: #5cb85c;
@@ -35,28 +23,25 @@
             --quality-super: #e87830;
             --quality-god: #e8b830;
         }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             background: var(--bg);
             font-family: 'STSong', 'Songti SC', 'Noto Serif SC', 'SimSun', 'KaiTi', 'STKaiti', '楷体', '华文楷体', 'Georgia', 'Times New Roman', serif;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             min-height: 100vh;
             overflow-x: hidden;
             position: relative;
             -webkit-tap-highlight-color: transparent;
             user-select: none;
             -webkit-user-select: none;
+            padding-bottom: 40px;
         }
-
-        /* 粒子背景 */
         #particleCanvas {
             position: fixed;
             top: 0;
@@ -66,26 +51,22 @@
             pointer-events: none;
             z-index: 0;
         }
-
-        /* 主容器 */
         .main-container {
             position: relative;
             z-index: 1;
             width: 100%;
-            max-width: 600px;
+            max-width: 640px;
             padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 20px;
+            gap: 18px;
         }
-
-        /* 标题区域 */
         .title-section {
             text-align: center;
             position: relative;
         }
-        .title-section .subtitle-ornament {
+        .subtitle-ornament {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -122,7 +103,6 @@
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: none;
             filter: drop-shadow(0 2px 6px rgba(180, 120, 30, 0.5));
             margin: 0;
             line-height: 1.3;
@@ -133,8 +113,23 @@
             letter-spacing: 0.2em;
             margin-top: 2px;
         }
-
-        /* 输入区域 */
+        .badge-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 6px;
+        }
+        .mini-badge {
+            font-size: 0.7rem;
+            padding: 4px 10px;
+            border-radius: 12px;
+            letter-spacing: 0.05em;
+            border: 1px solid rgba(180, 140, 60, 0.3);
+            color: #c8b878;
+            background: rgba(30, 25, 15, 0.5);
+            white-space: nowrap;
+        }
         .input-section {
             width: 100%;
             display: flex;
@@ -171,11 +166,6 @@
             box-shadow: 0 0 20px rgba(200, 150, 50, 0.25), 0 0 40px rgba(200, 150, 50, 0.08);
             background: rgba(18, 18, 38, 0.85);
         }
-        .name-input:focus::placeholder {
-            color: rgba(150, 140, 120, 0.3);
-        }
-
-        /* 觉醒按钮 */
         .awaken-btn {
             padding: 14px 28px;
             font-size: 1.1rem;
@@ -204,28 +194,7 @@
         .awaken-btn:active {
             transform: scale(0.96);
             transition: transform 0.1s ease;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
         }
-        .awaken-btn::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255, 220, 140, 0.25) 0%, transparent 60%);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        .awaken-btn:hover::after {
-            opacity: 1;
-        }
-        .awaken-btn .sparkle {
-            position: absolute;
-            pointer-events: none;
-        }
-
-        /* 觉醒闪光动画 */
         @keyframes awakenFlash {
             0% {
                 filter: brightness(1);
@@ -241,7 +210,6 @@
             animation: awakenFlash 0.5s ease-out;
         }
 
-        /* 结果卡片 */
         .result-card {
             width: 100%;
             background: var(--card-bg);
@@ -302,8 +270,6 @@
             border-bottom: 1px solid rgba(200, 160, 60, 0.4);
             border-right: 1px solid rgba(200, 160, 60, 0.4);
         }
-
-        /* 武魂名称 */
         .soul-name-display {
             text-align: center;
             margin-bottom: 10px;
@@ -322,7 +288,7 @@
             text-shadow: 0 0 20px rgba(200, 150, 40, 0.5);
             line-height: 1.4;
         }
-        .soul-name-display .dual-badge {
+        .dual-badge {
             display: inline-block;
             background: rgba(200, 60, 40, 0.2);
             color: #f09080;
@@ -344,8 +310,6 @@
                 box-shadow: 0 0 18px rgba(220, 80, 50, 0.6);
             }
         }
-
-        /* 信息网格 */
         .info-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -381,7 +345,7 @@
             letter-spacing: 0.04em;
             font-size: 0.9rem;
         }
-        .info-item .quality-badge {
+        .quality-badge {
             display: inline-block;
             padding: 3px 10px;
             border-radius: 4px;
@@ -453,8 +417,6 @@
                 box-shadow: 0 0 24px rgba(250, 210, 60, 0.5);
             }
         }
-
-        /* 魂环展示 */
         .soul-rings-section {
             margin: 14px 0;
             text-align: center;
@@ -542,8 +504,6 @@
             margin: 0 4px;
             cursor: default;
         }
-
-        /* 魂技列表 */
         .skills-section {
             margin: 14px 0;
             padding: 14px;
@@ -578,8 +538,6 @@
             flex-shrink: 0;
             border: 2px solid;
         }
-
-        /* 双生武魂第二武魂 */
         .second-soul {
             margin-top: 16px;
             padding-top: 16px;
@@ -601,11 +559,9 @@
             border-radius: 10px;
             border: 1px solid rgba(220, 150, 50, 0.4);
         }
-
-        /* 底部按钮 */
         .action-buttons {
             display: flex;
-            gap: 12px;
+            gap: 10px;
             flex-wrap: wrap;
             justify-content: center;
         }
@@ -620,6 +576,7 @@
             color: var(--text-muted);
             cursor: pointer;
             transition: all 0.3s ease;
+            white-space: nowrap;
         }
         .secondary-btn:hover {
             border-color: rgba(200, 160, 80, 0.6);
@@ -630,8 +587,214 @@
         .secondary-btn:active {
             transform: scale(0.95);
         }
+        .secondary-btn.danger {
+            border-color: rgba(200, 80, 60, 0.35);
+        }
+        .secondary-btn.danger:hover {
+            border-color: rgba(220, 90, 60, 0.7);
+            color: #f09080;
+            box-shadow: 0 0 15px rgba(200, 80, 50, 0.25);
+        }
 
-        /* Toast提示 */
+        /* 历史记录面板 */
+        .history-panel {
+            width: 100%;
+            margin-top: 8px;
+        }
+        .history-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            padding: 14px 18px;
+            background: rgba(20, 20, 40, 0.7);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            gap: 12px;
+        }
+        .history-header:hover {
+            border-color: rgba(200, 150, 50, 0.55);
+            box-shadow: 0 0 18px rgba(180, 130, 40, 0.2);
+        }
+        .history-header .history-title {
+            font-size: 1rem;
+            color: var(--gold-light);
+            letter-spacing: 0.08em;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .history-header .history-count {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            background: rgba(30, 30, 50, 0.6);
+            padding: 3px 10px;
+            border-radius: 12px;
+            letter-spacing: 0.04em;
+        }
+        .history-header .toggle-icon {
+            font-size: 1.2rem;
+            color: var(--gold);
+            transition: transform 0.4s ease;
+            flex-shrink: 0;
+        }
+        .history-header.open .toggle-icon {
+            transform: rotate(180deg);
+        }
+        .history-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.4s ease;
+            opacity: 0;
+            background: rgba(16, 16, 28, 0.7);
+            border-radius: 0 0 10px 10px;
+            border: 1px solid transparent;
+            border-top: none;
+            margin-top: -2px;
+        }
+        .history-body.expanded {
+            max-height: 2000px;
+            opacity: 1;
+            border-color: var(--border);
+        }
+        .history-list {
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .history-list::-webkit-scrollbar {
+            width: 5px;
+        }
+        .history-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .history-list::-webkit-scrollbar-thumb {
+            background: rgba(180, 140, 60, 0.3);
+            border-radius: 10px;
+        }
+        .history-empty {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 20px;
+            font-size: 0.9rem;
+            letter-spacing: 0.06em;
+        }
+        .history-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            background: rgba(25, 25, 45, 0.6);
+            border-radius: 8px;
+            border: 1px solid rgba(100, 80, 50, 0.18);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            flex-wrap: wrap;
+            position: relative;
+        }
+        .history-item:hover {
+            border-color: rgba(200, 150, 50, 0.45);
+            background: rgba(30, 30, 50, 0.7);
+            box-shadow: 0 0 14px rgba(180, 130, 40, 0.15);
+        }
+        .history-item .h-index {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            min-width: 22px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .history-item .h-name {
+            font-weight: bold;
+            color: var(--text-light);
+            letter-spacing: 0.05em;
+            min-width: 50px;
+            flex-shrink: 0;
+        }
+        .history-item .h-soul {
+            color: #f0d68a;
+            letter-spacing: 0.04em;
+            flex: 1;
+            min-width: 80px;
+        }
+        .history-item .h-quality {
+            flex-shrink: 0;
+        }
+        .history-item .h-time {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            flex-shrink: 0;
+            letter-spacing: 0.03em;
+        }
+        .history-item .h-delete {
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 1px solid rgba(200, 80, 60, 0.35);
+            background: rgba(30, 20, 20, 0.6);
+            color: #c08070;
+            font-size: 0.7rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s ease;
+            line-height: 1;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .history-item:hover .h-delete {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .history-item .h-delete:hover {
+            background: rgba(180, 50, 40, 0.5);
+            border-color: rgba(220, 70, 50, 0.7);
+            color: #f09080;
+            box-shadow: 0 0 8px rgba(200, 60, 40, 0.4);
+        }
+        .history-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 16px;
+            border-top: 1px solid rgba(100, 80, 50, 0.2);
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .history-footer .small-btn {
+            font-size: 0.75rem;
+            padding: 6px 12px;
+            font-family: inherit;
+            letter-spacing: 0.05em;
+            background: rgba(30, 30, 50, 0.5);
+            border: 1px solid rgba(140, 120, 80, 0.3);
+            border-radius: 5px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        .history-footer .small-btn:hover {
+            border-color: rgba(200, 160, 80, 0.5);
+            color: var(--text-light);
+        }
+        .history-footer .small-btn.danger {
+            border-color: rgba(180, 70, 50, 0.3);
+        }
+        .history-footer .small-btn.danger:hover {
+            border-color: rgba(220, 80, 50, 0.6);
+            color: #f09080;
+        }
+
         .toast {
             position: fixed;
             top: 30px;
@@ -653,7 +816,6 @@
             transform: translateX(-50%) translateY(0);
         }
 
-        /* 响应式调整 */
         @media (max-width: 480px) {
             .main-container {
                 padding: 14px;
@@ -683,45 +845,53 @@
                 padding: 12px 20px;
                 font-size: 1rem;
             }
+            .history-item {
+                padding: 8px 10px;
+                gap: 6px;
+                font-size: 0.78rem;
+            }
+            .history-item .h-delete {
+                opacity: 1;
+                pointer-events: auto;
+                width: 18px;
+                height: 18px;
+                top: 4px;
+                right: 4px;
+            }
         }
     </style>
 </head>
 <body>
-
-    <!-- 粒子背景画布 -->
     <canvas id="particleCanvas"></canvas>
-
-    <!-- Toast提示 -->
     <div class="toast" id="toast"></div>
 
-    <!-- 主容器 -->
     <div class="main-container">
         <!-- 标题 -->
         <div class="title-section">
             <div class="subtitle-ornament">
-                <span class="line"></span>
-                <span class="diamond"></span>
-                <span class="line"></span>
+                <span class="line"></span><span class="diamond"></span><span class="line"></span>
             </div>
             <h1 class="main-title">武 魂 觉 醒</h1>
             <p class="subtitle">— 命定之魂 · 随名而现 —</p>
+            <div class="badge-row">
+                <span class="mini-badge">🦁 兽武魂</span>
+                <span class="mini-badge">⚔️ 器武魂</span>
+                <span class="mini-badge">🌿 植物武魂</span>
+                <span class="mini-badge">🔥 元素武魂</span>
+                <span class="mini-badge">✨ 特殊武魂</span>
+                <span class="mini-badge">🍰 食物武魂</span>
+                <span class="mini-badge">🧠 精神武魂</span>
+                <span class="mini-badge">☠️ 毒武魂</span>
+                <span class="mini-badge">👁️ 本体武魂</span>
+            </div>
         </div>
 
         <!-- 输入区 -->
         <div class="input-section">
             <div class="name-input-wrapper">
-                <input
-                type="text"
-                class="name-input"
-                id="nameInput"
-                placeholder="请输入你的名字..."
-                maxlength="20"
-                autocomplete="off"
-                >
+                <input type="text" class="name-input" id="nameInput" placeholder="请输入你的名字..." maxlength="20" autocomplete="off">
             </div>
-            <button class="awaken-btn" id="awakenBtn" title="觉醒武魂">
-                ✦ 觉 醒 ✦
-            </button>
+            <button class="awaken-btn" id="awakenBtn" title="觉醒武魂">✦ 觉 醒 ✦</button>
         </div>
 
         <!-- 结果卡片 -->
@@ -730,15 +900,34 @@
             <div class="corner-ornament top-right"></div>
             <div class="corner-ornament bottom-left"></div>
             <div class="corner-ornament bottom-right"></div>
-            <div id="resultContent">
-                <!-- 动态填充 -->
-            </div>
+            <div id="resultContent"></div>
         </div>
 
         <!-- 操作按钮 -->
         <div class="action-buttons" id="actionButtons" style="display:none;">
             <button class="secondary-btn" id="copyBtn">📋 复制结果</button>
             <button class="secondary-btn" id="reawakenBtn">🔄 重新觉醒</button>
+            <button class="secondary-btn" id="saveRecordBtn">💾 保存记录</button>
+        </div>
+
+        <!-- 历史记录面板 -->
+        <div class="history-panel" id="historyPanel">
+            <div class="history-header" id="historyHeader">
+                <span class="history-title">📜 觉醒记录 <span class="history-count" id="historyCount">0</span></span>
+                <span class="toggle-icon" id="toggleIcon">▼</span>
+            </div>
+            <div class="history-body" id="historyBody">
+                <div class="history-list" id="historyList">
+                    <div class="history-empty">暂无觉醒记录，快去觉醒你的武魂吧 ✨</div>
+                </div>
+                <div class="history-footer" id="historyFooter" style="display:none;">
+                    <span style="font-size:0.7rem;color:var(--text-muted);" id="historyStats"></span>
+                    <div style="display:flex;gap:6px;">
+                        <button class="small-btn" id="exportBtn">📤 导出</button>
+                        <button class="small-btn danger" id="clearHistoryBtn">🗑️ 清空记录</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -752,9 +941,24 @@
             const actionButtons = document.getElementById('actionButtons');
             const copyBtn = document.getElementById('copyBtn');
             const reawakenBtn = document.getElementById('reawakenBtn');
+            const saveRecordBtn = document.getElementById('saveRecordBtn');
             const toast = document.getElementById('toast');
             const canvas = document.getElementById('particleCanvas');
             const ctx = canvas.getContext('2d');
+            const historyHeader = document.getElementById('historyHeader');
+            const historyBody = document.getElementById('historyBody');
+            const historyList = document.getElementById('historyList');
+            const historyCount = document.getElementById('historyCount');
+            const historyFooter = document.getElementById('historyFooter');
+            const historyStats = document.getElementById('historyStats');
+            const toggleIcon = document.getElementById('toggleIcon');
+            const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+            const exportBtn = document.getElementById('exportBtn');
+
+            // ============ 当前结果缓存 ============
+            let currentResultData = null;
+            const STORAGE_KEY = 'soul_awaken_history';
+            const MAX_HISTORY = 60;
 
             // ============ 粒子背景 ============
             let particles = [];
@@ -765,10 +969,8 @@
                 canvas.height = window.innerHeight;
             }
             resizeCanvas();
-            window.addEventListener('resize', () => {
-                resizeCanvas();
-                initParticles();
-            });
+            window.addEventListener('resize', () => { resizeCanvas();
+                initParticles(); });
 
             function initParticles() {
                 particles = [];
@@ -781,7 +983,7 @@
                         vy: (Math.random() - 0.5) * 0.35 - 0.2,
                         alpha: Math.random() * 0.5 + 0.2,
                         alphaSpeed: (Math.random() - 0.5) * 0.008,
-                        hue: 35 + Math.random() * 25, // 金色调
+                        hue: 35 + Math.random() * 25,
                     });
                 }
             }
@@ -793,8 +995,6 @@
                     p.x += p.vx;
                     p.y += p.vy;
                     p.alpha += p.alphaSpeed;
-
-                    // 边界回弹
                     if (p.x < 0) { p.x = 0;
                         p.vx *= -1; }
                     if (p.x > canvas.width) { p.x = canvas.width;
@@ -803,19 +1003,13 @@
                         p.vy *= -1; }
                     if (p.y > canvas.height) { p.y = canvas.height;
                         p.vy *= -1; }
-
-                    // alpha范围限制
                     if (p.alpha < 0.08) p.alphaSpeed = Math.abs(p.alphaSpeed);
                     if (p.alpha > 0.65) p.alphaSpeed = -Math.abs(p.alphaSpeed);
-
-                    // 绘制粒子
                     const hue = p.hue;
                     ctx.beginPath();
                     ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
                     ctx.fillStyle = `hsla(${hue}, 70%, 65%, ${p.alpha})`;
                     ctx.fill();
-
-                    // 发光效果
                     const glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 3);
                     glow.addColorStop(0, `hsla(${hue}, 80%, 70%, ${p.alpha * 0.6})`);
                     glow.addColorStop(1, 'transparent');
@@ -828,13 +1022,34 @@
             }
             animateParticles();
 
-            // ============ 伪随机数生成器（基于名字种子） ============
+            function spawnBurstParticles() {
+                const burstCount = 25;
+                const cx = window.innerWidth / 2;
+                const cy = window.innerHeight / 2;
+                for (let i = 0; i < burstCount; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = Math.random() * 3 + 2;
+                    particles.push({
+                        x: cx + (Math.random() - 0.5) * 200,
+                        y: cy + (Math.random() - 0.5) * 200,
+                        r: Math.random() * 3 + 1.5,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed,
+                        alpha: Math.random() * 0.7 + 0.3,
+                        alphaSpeed: -0.015 - Math.random() * 0.03,
+                        hue: 35 + Math.random() * 30,
+                    });
+                }
+                if (particles.length > 150) particles = particles.slice(-120);
+            }
+
+            // ============ 伪随机数生成器 ============
             function hashString(str) {
                 let hash = 0;
                 for (let i = 0; i < str.length; i++) {
                     const char = str.charCodeAt(i);
                     hash = ((hash << 5) - hash) + char;
-                    hash = hash & 0x7fffffff; // 保持正数
+                    hash = hash & 0x7fffffff;
                 }
                 return hash;
             }
@@ -847,7 +1062,7 @@
                 };
             }
 
-            // ============ 数据池 ============
+            // ============ 大幅扩充的武魂数据池 ============
             const SOUL_TYPES = {
                 beast: {
                     name: '兽武魂',
@@ -858,6 +1073,13 @@
                         '赤焰狂狮', '银月狼王', '碧磷蛇皇', '金刚巨熊', '风暴翼龙', '玄冰蝎',
                         '噬魂蛛皇', '裂空鹰', '深海魔鲸', '熔岩巨龟', '紫晶翼狮', '苍狼',
                         '天雷虎', '幽影豹', '血瞳魔狼', '冰甲角蟒', '炽焰凤凰', '霜狼',
+                        '雷角犀牛', '幻影蝶', '玄天鹤', '铁甲龙', '魅影狐', '金鬃狮',
+                        '寒冰蟾', '烈火鹰', '大地熊王', '疾风狼', '天罡虎', '毒刺蝎',
+                        '双头蛇', '鬼面蛛', '银背猩猩', '黑水玄蛇', '金毛犼', '九头狮',
+                        '紫纹豹', '赤瞳牛', '冰晶凤凰', '雷翼雕', '玄铁龟', '血蝙蝠',
+                        '白额虎', '金眼雕', '独角犀', '铁翼鹰', '幻灵猫', '追风驹',
+                        '墨麒麟', '玉蛟龙', '雪域冰熊', '烈焰蟒', '金刚猿', '踏云驹',
+                        '流光隼', '暗夜蝙蝠', '黄金蟒', '裂地熊', '噬金鼠', '青鸾',
                     ],
                 },
                 tool: {
@@ -868,15 +1090,23 @@
                         '碎星弓', '裂空鞭', '裁决之刃', '霜寒剑', '焚天炉', '雷霆之锤',
                         '暗影匕首', '圣光权杖', '血煞刀', '天罡斧', '幻灵琴', '星辰法杖',
                         '破魔弓', '龙纹戟', '封天印', '阴阳镜', '乾坤扇', '诛仙剑',
+                        '灭世刀', '玄冰剑', '烈阳枪', '追魂钩', '碎岳锤', '斩龙剑',
+                        '天罗伞', '锁魂链', '裂天钺', '定海珠', '打神鞭', '开天斧',
+                        '混元环', '紫金葫芦', '缚妖索', '风雷棍', '流光刃', '陨星锤',
+                        '穿云箭', '断水匕', '降魔杵', '八卦盘', '血滴子', '断魂刀',
+                        '天霜剑', '焚寂刀', '龙胆枪', '凤翅镗', '金蛟剪', '玉如意',
                     ],
                 },
                 plant: {
                     name: '植物武魂',
                     names: [
-                        '蓝银草', '九心海棠', '绮罗郁金香', '幽冥灵猫柳', '星辰树', '血荆棘',
-                        '冰火两仪花', '七彩灵参', '鬼藤', '月光兰', '噬魂花', '天香豆蔻',
-                        '龙血树', '幻灵菇', '金线莲', '紫云藤', '寒冰苔', '烈焰葵',
-                        '暗影藤蔓', '圣光莲', '雷击木', '风铃草', '万毒花', '长生柳',
+                        '蓝银草', '九心海棠', '绮罗郁金香', '星辰树', '血荆棘', '冰火两仪花',
+                        '七彩灵参', '鬼藤', '月光兰', '噬魂花', '天香豆蔻', '龙血树',
+                        '幻灵菇', '金线莲', '紫云藤', '寒冰苔', '烈焰葵', '暗影藤蔓',
+                        '圣光莲', '雷击木', '风铃草', '万毒花', '长生柳', '幽冥灵猫柳',
+                        '太阳花', '曼陀罗', '罂粟花', '铁线草', '银叶菊', '血兰',
+                        '魔藤', '灵仙草', '紫罗兰花', '地狱花', '天星草', '不死草',
+                        '赤阳花', '冰凌草', '雷霆竹', '幻心花', '金刚藤', '噬骨花',
                     ],
                 },
                 element: {
@@ -885,6 +1115,9 @@
                         '烈焰', '寒冰', '雷霆', '风暴', '大地之心', '光明之灵', '暗影之核',
                         '时空裂隙', '熔岩', '冰霜', '天雷', '飓风之眼', '星辰之力',
                         '虚无', '混沌', '极光', '岩浆', '玄冰', '紫电', '青焰',
+                        '黑炎', '白霜', '虚空', '次元', '冥火', '圣焰', '水灵',
+                        '风灵', '岩核', '光翼', '暗流', '雷核', '冰晶', '炎龙息',
+                        '霜冻', '闪光', '暗幕', '虹光', '玄黄', '阴阳', '太极',
                     ],
                 },
                 special: {
@@ -893,6 +1126,7 @@
                         '六翼天使', '死神之镰', '生命女神', '命运之轮', '空间之刃', '时间沙漏',
                         '星辰之眼', '幻梦境', '轮回盘', '因果锁链', '灵魂之灯', '虚空之门',
                         '造化玉碟', '灭世黑莲', '创世之光', '永恒之钟', '审判天平',
+                        '诅咒之眼', '守护之盾', '契约之书', '献祭之环', '预言镜', '万象天引',
                     ],
                 },
                 dark: {
@@ -900,6 +1134,8 @@
                     names: [
                         '邪眸', '死亡之眼', '暗黑魔龙', '血魔', '冥王剑', '诅咒之书',
                         '深渊触手', '亡灵骨龙', '噬心鬼', '永夜之幕', '灾厄之刃', '枯萎之息',
+                        '暗影君主', '地狱火', '食魂兽', '黑死蝶', '噩梦之源', '凋零玫瑰',
+                        '鬼泣', '死灵法杖', '幽魂锁', '血月', '暗蚀', '黑渊',
                     ],
                 },
                 light: {
@@ -907,6 +1143,41 @@
                     names: [
                         '神圣天使', '光明凤凰', '圣光独角兽', '审判之剑', '净化之炎',
                         '晨曦之光', '天罚之矛', '慈悲之盾', '荣耀之冠', '圣歌之铃',
+                        '炽日', '净化圣莲', '光辉骑士', '黎明之翼', '圣焰', '天启',
+                        '福音书', '圣杯', '光之羽', '辉月', '白虹', '圣言',
+                    ],
+                },
+                food: {
+                    name: '食物武魂',
+                    names: [
+                        '九宝珍馐', '仙灵糕点', '龙血米饭', '凤凰蛋羹', '灵芝仙汤',
+                        '琼浆玉液', '七彩糖果', '神兽肉包', '灵果拼盘', '仙茶',
+                        '百草丹', '蜜汁烤肉', '冰霜甜筒', '烈焰火锅', '星辰饼干',
+                        '幻灵果汁', '天香豆沙', '翡翠饺子', '黄金炒饭', '仙露',
+                    ],
+                },
+                spiritual: {
+                    name: '精神武魂',
+                    names: [
+                        '心灵之眼', '念力', '精神冲击', '幻术', '读心', '灵魂链接',
+                        '意识领域', '催眠', '记忆操控', '精神风暴', '共感', '心网',
+                        '梦境编织', '情绪掌控', '心灵感应', '精神屏障', '魂印', '灵感',
+                    ],
+                },
+                poison: {
+                    name: '毒武魂',
+                    names: [
+                        '碧磷蛇毒', '蝎毒', '蛛皇毒', '腐蚀毒液', '麻痹毒素', '剧毒之花',
+                        '瘟疫之源', '瘴气', '血毒', '蛊毒', '寒毒', '火毒',
+                        '噬心毒', '化骨水', '迷魂香', '断肠草', '五毒', '万毒之王',
+                    ],
+                },
+                body: {
+                    name: '本体武魂',
+                    names: [
+                        '灵眸', '天眼', '金刚手', '风神腿', '钢铁之躯', '龙臂',
+                        '鹰眼', '铁拳', '神速', '铜头铁骨', '麒麟臂', '蛇骨',
+                        '虎爪', '飞毛腿', '铁掌', '神耳', '金刚不坏', '万象之体',
                     ],
                 },
             };
@@ -915,7 +1186,7 @@
             const QUALITY_CSS = ['quality-waste', 'quality-normal', 'quality-mid', 'quality-high', 'quality-top',
                 'quality-super', 'quality-god'
             ];
-            const QUALITY_WEIGHTS = [4, 22, 28, 22, 14, 7, 3]; // 权重分布
+            const QUALITY_WEIGHTS = [4, 22, 28, 22, 14, 7, 3];
 
             const SOUL_RANKS = [
                 { name: '魂士', minLevel: 1, maxLevel: 10, maxRings: 0 },
@@ -937,32 +1208,60 @@
             const RING_COLOR_NAMES = ['十年(白)', '百年(黄)', '千年(紫)', '万年(黑)', '十万年(红)', '百万年(金)'];
             const RING_CSS_CLASSES = ['ring-white', 'ring-yellow', 'ring-purple', 'ring-black', 'ring-red', 'ring-gold'];
 
-            // 魂技名称模板
             const SKILL_PREFIXES_BEAST = ['狂暴', '撕裂', '咆哮', '附体', '冲击', '裂地', '震天', '嗜血', '疾风', '雷霆',
-                '冰霜', '烈焰', '暗影', '神圣', '毁灭'
+                '冰霜', '烈焰', '暗影', '神圣', '毁灭', '天崩', '地裂', '怒涛', '碎星', '噬魂',
+                '龙啸', '虎威', '凤舞', '狼袭', '蛇缚', '鹰击', '熊抱', '鲸吞', '狮吼', '豹闪',
+                '血怒', '铁壁', '幻影', '绝杀', '破军', '镇岳'
             ];
             const SKILL_SUFFIXES_BEAST = ['之爪', '之牙', '之翼', '冲击', '怒吼', '猛击', '撕咬', '践踏', '甩尾', '冲锋',
-                '守护', '降临', '真身'
+                '守护', '降临', '真身', '风暴', '天降', '斩', '裂空', '破', '领域', '觉醒',
+                '爆裂', '突袭', '缠杀', '陨落', '震荡', '横扫'
             ];
             const SKILL_PREFIXES_TOOL = ['破灭', '裂空', '横扫', '天罚', '裁决', '碎星', '斩魂', '崩山', '断江', '焚天',
-                '冰封', '雷击', '风暴', '光影', '虚空'
+                '冰封', '雷击', '风暴', '光影', '虚空', '诛仙', '灭世', '开天', '辟地', '碎岳',
+                '穿云', '断水', '斩龙', '降魔', '镇魂', '封魔', '破阵', '贯日'
             ];
             const SKILL_SUFFIXES_TOOL = ['斩', '刺', '劈', '扫', '击', '破', '舞', '诀', '式', '阵', '域', '杀',
-            '灭'];
-            const SKILL_PREFIXES_PLANT = ['缠绕', '寄生', '毒雾', '治愈', '荆棘', '藤蔓', '花雨', '孢子', '根缚', '叶刃',
-                '花粉', '树界'
+                '灭', '碎', '裂', '崩', '断', '穿', '贯', '落', '旋', '影', '闪', '震'
             ];
-            const SKILL_SUFFIXES_PLANT = ['之舞', '之阵', '牢笼', '突刺', '蔓延', '绽放', '凋零', '生长', '屏障', '领域'];
+            const SKILL_PREFIXES_PLANT = ['缠绕', '寄生', '毒雾', '治愈', '荆棘', '藤蔓', '花雨', '孢子', '根缚', '叶刃',
+                '花粉', '树界', '绽放', '凋零', '蔓延', '丛生', '花葬', '森罗'
+            ];
+            const SKILL_SUFFIXES_PLANT = ['之舞', '之阵', '牢笼', '突刺', '蔓延', '绽放', '凋零', '生长', '屏障', '领域',
+                '之海', '结界', '迷宫', '庇护', '绞杀', '封印'
+            ];
             const SKILL_PREFIXES_ELEMENT = ['焚天', '冰封', '雷霆', '风暴', '陨石', '极光', '暗蚀', '光耀', '时空', '混沌',
-                '虚无', '熔岩'
+                '虚无', '熔岩', '霜冻', '雷暴', '飓风', '星陨', '日冕', '月华', '潮汐', '地震'
             ];
             const SKILL_SUFFIXES_ELEMENT = ['之怒', '降临', '冲击', '漩涡', '爆裂', '射线', '领域', '风暴', '斩', '灭',
-            '咆哮'];
+                '咆哮', '洗礼', '裁决', '轰击', '裂变', '吞噬', '湮灭'
+            ];
+            const SKILL_PREFIXES_FOOD = ['美味', '滋补', '盛宴', '甘甜', '鲜香', '回甘', '醇厚', '滋养', '强身', '益气',
+                '补血', '提神'
+            ];
+            const SKILL_SUFFIXES_FOOD = ['之力', '之宴', '滋补', '回复', '强化', '甘霖', '滋养', '调理', '焕发', '充能'];
+            const SKILL_PREFIXES_SPIRIT = ['心灵', '精神', '灵魂', '意志', '念力', '幻象', '催眠', '读心', '震慑', '干扰',
+                '共鸣', '操控'
+            ];
+            const SKILL_SUFFIXES_SPIRIT = ['冲击', '屏障', '链接', '风暴', '探测', '迷惑', '撕裂', '压制', '共鸣', '领域',
+                '穿刺', '暗示'
+            ];
+            const SKILL_PREFIXES_POISON = ['剧毒', '腐蚀', '麻痹', '瘟疫', '瘴气', '蛊毒', '血毒', '寒毒', '火毒', '噬心',
+                '化骨', '迷魂'
+            ];
+            const SKILL_SUFFIXES_POISON = ['之雾', '蔓延', '侵蚀', '爆发', '感染', '之牙', '之刺', '漩涡', '领域', '诅咒',
+                '浸透', '攻心'
+            ];
+            const SKILL_PREFIXES_BODY = ['强化', '硬化', '加速', '巨力', '锐利', '坚韧', '爆发', '凝神', '金刚', '不坏',
+                '神行', '铁壁'
+            ];
+            const SKILL_SUFFIXES_BODY = ['拳', '掌', '腿', '踢', '撞', '闪', '身法', '一击', '连打', '冲撞', '抱摔',
+            '投技'];
 
-            // 封号用字
             const TITLE_CHARS = ['龙', '凤', '虎', '剑', '枪', '冰', '火', '雷', '风', '影', '光', '暗', '星', '海', '天',
                 '地', '血', '冥', '圣', '魔', '战', '灵', '魂', '骨', '毒', '幻', '空', '时', '霜', '炎', '铁', '钢',
-                '狂', '傲', '幽', '玄', '青', '赤', '金', '银', '月', '日', '云', '雪', '岚', '岩', '刃', '羽'
+                '狂', '傲', '幽', '玄', '青', '赤', '金', '银', '月', '日', '云', '雪', '岚', '岩', '刃', '羽',
+                '极', '无', '太', '古', '霸', '皇', '帝', '王', '尊', '仙', '神', '佛', '鬼', '妖', '魅', '罡',
             ];
 
             // ============ 加权随机选择 ============
@@ -988,34 +1287,26 @@
             function generateSoulData(name) {
                 const seed = hashString(name.trim() || '无名');
                 const rand = createSeededRandom(seed);
-
-                // 双生武魂判定 (约2.5%概率)
-                const isDual = rand() < 0.025;
+                const isDual = rand() < 0.03;
 
                 function generateSingleSoul(randLocal) {
-                    // 选择武魂类型
                     const typeKeys = Object.keys(SOUL_TYPES);
                     const typeKey = randomFromArray(randLocal, typeKeys);
                     const typeData = SOUL_TYPES[typeKey];
                     const soulName = randomFromArray(randLocal, typeData.names);
-
-                    // 选择品质
                     const qualityIndex = weightedRandom(randLocal, QUALITY_WEIGHTS);
                     const quality = QUALITIES[qualityIndex];
                     const qualityCss = QUALITY_CSS[qualityIndex];
 
-                    // 先天魂力 (0-10)
                     let innateSoulPower;
-                    if (qualityIndex >= 6) innateSoulPower = randomInt(randLocal, 9, 10); // 神级
-                    else if (qualityIndex >= 5) innateSoulPower = randomInt(randLocal, 7, 10); // 超级
-                    else if (qualityIndex >= 4) innateSoulPower = randomInt(randLocal, 5, 9); // 顶级
-                    else if (qualityIndex >= 3) innateSoulPower = randomInt(randLocal, 3, 7); // 高级
-                    else if (qualityIndex >= 2) innateSoulPower = randomInt(randLocal, 1, 5); // 中级
-                    else if (qualityIndex >= 1) innateSoulPower = randomInt(randLocal, 0, 3); // 普通
-                    else innateSoulPower = randomInt(randLocal, 0, 1); // 废武魂
+                    if (qualityIndex >= 6) innateSoulPower = randomInt(randLocal, 9, 10);
+                    else if (qualityIndex >= 5) innateSoulPower = randomInt(randLocal, 7, 10);
+                    else if (qualityIndex >= 4) innateSoulPower = randomInt(randLocal, 5, 9);
+                    else if (qualityIndex >= 3) innateSoulPower = randomInt(randLocal, 3, 7);
+                    else if (qualityIndex >= 2) innateSoulPower = randomInt(randLocal, 1, 5);
+                    else if (qualityIndex >= 1) innateSoulPower = randomInt(randLocal, 0, 3);
+                    else innateSoulPower = randomInt(randLocal, 0, 1);
 
-                    // 魂力等级 (基于品质和先天魂力)
-                    const baseRankRoll = randLocal();
                     let rankIndex;
                     if (qualityIndex >= 6) rankIndex = randomInt(randLocal, 9, SOUL_RANKS.length - 1);
                     else if (qualityIndex >= 5) rankIndex = randomInt(randLocal, 7, 10);
@@ -1027,60 +1318,70 @@
 
                     const rankData = SOUL_RANKS[rankIndex];
                     const soulLevel = randomInt(randLocal, rankData.minLevel, rankData.maxLevel);
-
-                    // 魂环配置
                     const ringCount = rankData.maxRings;
                     const rings = [];
                     for (let i = 0; i < ringCount; i++) {
                         let ringColorIndex;
-                        if (rankIndex >= 11) {
-                            // 神级：可能有百万年魂环
-                            ringColorIndex = weightedRandom(randLocal, [5, 15, 20, 25, 25, 10]);
-                        } else if (rankIndex >= 9) {
-                            // 封号斗罗以上：至少一个十万年
-                            if (i === ringCount - 1 && rings.filter(r => r >= 4).length === 0) {
-                                ringColorIndex = randomInt(randLocal, 4, 5);
-                            } else {
-                                ringColorIndex = weightedRandom(randLocal, [8, 18, 25, 28, 18, 3]);
-                            }
-                        } else if (rankIndex >= 7) {
-                            ringColorIndex = weightedRandom(randLocal, [12, 22, 28, 28, 9, 1]);
-                        } else if (rankIndex >= 5) {
-                            ringColorIndex = weightedRandom(randLocal, [18, 28, 30, 20, 4, 0]);
-                        } else if (rankIndex >= 3) {
-                            ringColorIndex = weightedRandom(randLocal, [25, 35, 28, 12, 0, 0]);
-                        } else if (rankIndex >= 1) {
-                            ringColorIndex = weightedRandom(randLocal, [45, 40, 14, 1, 0, 0]);
-                        } else {
-                            ringColorIndex = 0; // 无魂环或仅白色
-                        }
+                        if (rankIndex >= 11) ringColorIndex = weightedRandom(randLocal, [5, 15, 20, 25, 25, 10]);
+                        else if (rankIndex >= 9) {
+                            if (i === ringCount - 1 && rings.filter(r => r >= 4).length === 0) ringColorIndex =
+                                randomInt(randLocal, 4, 5);
+                            else ringColorIndex = weightedRandom(randLocal, [8, 18, 25, 28, 18, 3]);
+                        } else if (rankIndex >= 7) ringColorIndex = weightedRandom(randLocal, [12, 22, 28, 28, 9, 1]);
+                        else if (rankIndex >= 5) ringColorIndex = weightedRandom(randLocal, [18, 28, 30, 20, 4, 0]);
+                        else if (rankIndex >= 3) ringColorIndex = weightedRandom(randLocal, [25, 35, 28, 12, 0, 0]);
+                        else if (rankIndex >= 1) ringColorIndex = weightedRandom(randLocal, [45, 40, 14, 1, 0, 0]);
+                        else ringColorIndex = 0;
                         ringColorIndex = Math.min(ringColorIndex, RING_COLORS.length - 1);
                         rings.push(ringColorIndex);
                     }
-                    // 按年份升序排列（从低到高）
                     rings.sort((a, b) => a - b);
 
-                    // 生成魂技
                     const skills = [];
                     for (let i = 0; i < rings.length; i++) {
                         let prefixPool, suffixPool;
-                        if (typeKey === 'beast') { prefixPool = SKILL_PREFIXES_BEAST;
-                            suffixPool = SKILL_SUFFIXES_BEAST; } else if (typeKey === 'tool') { prefixPool =
-                                SKILL_PREFIXES_TOOL;
-                            suffixPool = SKILL_SUFFIXES_TOOL; } else if (typeKey === 'plant') { prefixPool =
-                                SKILL_PREFIXES_PLANT;
-                            suffixPool = SKILL_SUFFIXES_PLANT; } else if (typeKey === 'element') { prefixPool =
-                                SKILL_PREFIXES_ELEMENT;
-                            suffixPool = SKILL_SUFFIXES_ELEMENT; } else { prefixPool = [...SKILL_PREFIXES_BEAST, ...
-                                SKILL_PREFIXES_ELEMENT
-                            ];
-                            suffixPool = [...SKILL_SUFFIXES_BEAST, ...SKILL_SUFFIXES_ELEMENT]; }
+                        switch (typeKey) {
+                            case 'beast':
+                                prefixPool = SKILL_PREFIXES_BEAST;
+                                suffixPool = SKILL_SUFFIXES_BEAST;
+                                break;
+                            case 'tool':
+                                prefixPool = SKILL_PREFIXES_TOOL;
+                                suffixPool = SKILL_SUFFIXES_TOOL;
+                                break;
+                            case 'plant':
+                                prefixPool = SKILL_PREFIXES_PLANT;
+                                suffixPool = SKILL_SUFFIXES_PLANT;
+                                break;
+                            case 'element':
+                                prefixPool = SKILL_PREFIXES_ELEMENT;
+                                suffixPool = SKILL_SUFFIXES_ELEMENT;
+                                break;
+                            case 'food':
+                                prefixPool = SKILL_PREFIXES_FOOD;
+                                suffixPool = SKILL_SUFFIXES_FOOD;
+                                break;
+                            case 'spiritual':
+                                prefixPool = SKILL_PREFIXES_SPIRIT;
+                                suffixPool = SKILL_SUFFIXES_SPIRIT;
+                                break;
+                            case 'poison':
+                                prefixPool = SKILL_PREFIXES_POISON;
+                                suffixPool = SKILL_SUFFIXES_POISON;
+                                break;
+                            case 'body':
+                                prefixPool = SKILL_PREFIXES_BODY;
+                                suffixPool = SKILL_SUFFIXES_BODY;
+                                break;
+                            default:
+                                prefixPool = [...SKILL_PREFIXES_BEAST, ...SKILL_PREFIXES_ELEMENT];
+                                suffixPool = [...SKILL_SUFFIXES_BEAST, ...SKILL_SUFFIXES_ELEMENT];
+                        }
                         const skillName = randomFromArray(randLocal, prefixPool) + randomFromArray(randLocal,
-                        suffixPool);
+                            suffixPool);
                         skills.push({ name: skillName, ringIndex: rings[i] });
                     }
 
-                    // 封号（仅封号斗罗及以上）
                     let title = null;
                     if (rankIndex >= 9 && rankIndex < 11) {
                         const titleChar = randomFromArray(randLocal, TITLE_CHARS);
@@ -1110,11 +1411,9 @@
                 const primarySoul = generateSingleSoul(rand);
                 let secondarySoul = null;
                 if (isDual) {
-                    // 第二武魂使用不同的随机序列
                     const seed2 = hashString(name.trim() + '_dual');
                     const rand2 = createSeededRandom(seed2);
                     secondarySoul = generateSingleSoul(rand2);
-                    // 第二武魂品质至少为高级
                     if (secondarySoul.qualityIndex < 3) {
                         secondarySoul.qualityIndex = randomInt(rand2, 3, 6);
                         secondarySoul.quality = QUALITIES[secondarySoul.qualityIndex];
@@ -1127,6 +1426,7 @@
                     primarySoul,
                     secondarySoul,
                     isDual,
+                    timestamp: Date.now(),
                 };
             }
 
@@ -1135,7 +1435,7 @@
                 const ringHTML = soulData.rings.map((rIdx, i) => {
                     const cssClass = RING_CSS_CLASSES[rIdx];
                     const colorName = RING_COLOR_NAMES[rIdx];
-                    return `<span class="ring-circle ${cssClass}" title="第${i + 1}魂环：${colorName}" style="animation-delay:${i * 0.08}s;"></span>`;
+                    return `<span class="ring-circle ${cssClass}" title="第${i+1}魂环：${colorName}" style="animation-delay:${i*0.08}s;"></span>`;
                 }).join('');
 
                 const skillsHTML = soulData.skills.map((sk, i) => {
@@ -1143,7 +1443,7 @@
                     return `
                         <div class="skill-item">
                             <span class="skill-dot ${dotClass}"></span>
-                            <span>第${i + 1}魂技：<strong>${sk.name}</strong></span>
+                            <span>第${i+1}魂技：<strong>${sk.name}</strong></span>
                             <span style="font-size:0.7rem;color:var(--text-muted);margin-left:auto;">${RING_COLOR_NAMES[sk.ringIndex]}</span>
                         </div>`;
                 }).join('');
@@ -1158,75 +1458,213 @@
                         <div class="soul-name">「${soulData.soulName}」</div>
                     </div>
                     <div class="info-grid">
-                        <div class="info-item">
-                            <span class="info-label">类型</span>
-                            <span class="info-value">${soulData.typeName}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">品质</span>
-                            <span class="quality-badge ${soulData.qualityCss}">${soulData.quality}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">先天魂力</span>
-                            <span class="info-value" style="color:${soulData.innateSoulPower >= 9 ? '#f8d840' : soulData.innateSoulPower >= 7 ? '#e89830' : 'var(--text-light)'};">${soulData.innateSoulPower} 级${soulData.innateSoulPower >= 10 ? ' (先天满魂力!)' : ''}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">魂力等级</span>
-                            <span class="info-value">${soulData.soulLevel} 级 · ${soulData.rankName}</span>
-                        </div>
+                        <div class="info-item"><span class="info-label">类型</span><span class="info-value">${soulData.typeName}</span></div>
+                        <div class="info-item"><span class="info-label">品质</span><span class="quality-badge ${soulData.qualityCss}">${soulData.quality}</span></div>
+                        <div class="info-item"><span class="info-label">先天魂力</span><span class="info-value" style="color:${soulData.innateSoulPower>=9?'#f8d840':soulData.innateSoulPower>=7?'#e89830':'var(--text-light)'};">${soulData.innateSoulPower} 级${soulData.innateSoulPower>=10?' (先天满魂力!)':''}</span></div>
+                        <div class="info-item"><span class="info-label">魂力等级</span><span class="info-value">${soulData.soulLevel} 级 · ${soulData.rankName}</span></div>
                         ${titleHTML}
                     </div>
                     <div class="soul-rings-section">
                         <div class="rings-label">🔮 魂环配置 (共 ${soulData.rings.length} 环)</div>
                         <div class="rings-display">${ringHTML || '<span style="color:var(--text-muted);font-size:0.8rem;">暂无魂环</span>'}</div>
-                        <div class="ring-legend">
-                            ${RING_COLOR_NAMES.map((name, i) => `<span style="color:${['#c8c8c8','#e0b830','#8b40c0','#555','#d03535','#e89830'][i]};font-size:0.65rem;">●${name}</span>`).join(' ')}
-                        </div>
+                        <div class="ring-legend">${RING_COLOR_NAMES.map((nm,i)=>`<span style="color:${['#c8c8c8','#e0b830','#8b40c0','#555','#d03535','#e89830'][i]};font-size:0.65rem;">●${nm}</span>`).join(' ')}</div>
                     </div>
-                    ${soulData.skills.length > 0 ? `
-                    <div class="skills-section">
-                        <div class="skills-title">⚔️ 魂技列表</div>
-                        ${skillsHTML}
-                    </div>` : ''}
+                    ${soulData.skills.length>0?`<div class="skills-section"><div class="skills-title">⚔️ 魂技列表</div>${skillsHTML}</div>`:''}
                 `;
             }
 
             function renderFullResult(data) {
                 let html = renderSoulHTML(data.primarySoul, data.name + ' 的武魂');
                 if (data.isDual && data.secondarySoul) {
-                    html += '<div class="second-soul">';
-                    html += renderSoulHTML(data.secondarySoul, '第二武魂');
-                    html += '</div>';
+                    html += '<div class="second-soul">' + renderSoulHTML(data.secondarySoul, '第二武魂') + '</div>';
                 }
                 return html;
             }
 
-            // ============ 显示结果 ============
             function showResult(data) {
+                currentResultData = data;
                 resultContent.innerHTML = renderFullResult(data);
                 resultCard.classList.add('visible');
                 actionButtons.style.display = 'flex';
-                // 滚动到卡片
-                setTimeout(() => {
-                    resultCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 200);
+                setTimeout(() => { resultCard.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 200);
             }
 
             function hideResult() {
                 resultCard.classList.remove('visible');
                 actionButtons.style.display = 'none';
                 resultContent.innerHTML = '';
+                currentResultData = null;
             }
 
             // ============ Toast ============
             let toastTimer;
+
             function showToast(msg) {
                 clearTimeout(toastTimer);
                 toast.textContent = msg;
                 toast.classList.add('show');
-                toastTimer = setTimeout(() => {
-                    toast.classList.remove('show');
-                }, 2000);
+                toastTimer = setTimeout(() => { toast.classList.remove('show'); }, 2000);
+            }
+
+            // ============ 历史记录管理 ============
+            function getHistory() {
+                try {
+                    const raw = localStorage.getItem(STORAGE_KEY);
+                    return raw ? JSON.parse(raw) : [];
+                } catch (e) {
+                    return [];
+                }
+            }
+
+            function saveHistory(records) {
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+                } catch (e) {
+                    showToast('⚠️ 存储空间不足，请清理旧记录');
+                }
+            }
+
+            function addToHistory(data) {
+                const records = getHistory();
+                const record = {
+                    id: Date.now(),
+                    name: data.name,
+                    timestamp: data.timestamp || Date.now(),
+                    primarySoul: {
+                        soulName: data.primarySoul.soulName,
+                        typeName: data.primarySoul.typeName,
+                        quality: data.primarySoul.quality,
+                        qualityIndex: data.primarySoul.qualityIndex,
+                        qualityCss: data.primarySoul.qualityCss,
+                        rankName: data.primarySoul.rankName,
+                        soulLevel: data.primarySoul.soulLevel,
+                        innateSoulPower: data.primarySoul.innateSoulPower,
+                        rings: [...data.primarySoul.rings],
+                        skills: data.primarySoul.skills.map(s => ({ name: s.name, ringIndex: s.ringIndex })),
+                        title: data.primarySoul.title,
+                    },
+                    isDual: data.isDual,
+                    secondarySoul: data.secondarySoul ? {
+                        soulName: data.secondarySoul.soulName,
+                        typeName: data.secondarySoul.typeName,
+                        quality: data.secondarySoul.quality,
+                        qualityIndex: data.secondarySoul.qualityIndex,
+                        qualityCss: data.secondarySoul.qualityCss,
+                        rankName: data.secondarySoul.rankName,
+                        soulLevel: data.secondarySoul.soulLevel,
+                        innateSoulPower: data.secondarySoul.innateSoulPower,
+                        rings: [...data.secondarySoul.rings],
+                        skills: data.secondarySoul.skills.map(s => ({ name: s.name, ringIndex: s.ringIndex })),
+                        title: data.secondarySoul.title,
+                    } : null,
+                };
+                records.unshift(record);
+                if (records.length > MAX_HISTORY) records.length = MAX_HISTORY;
+                saveHistory(records);
+                refreshHistoryUI();
+                showToast('✅ 觉醒记录已保存！');
+            }
+
+            function deleteHistoryRecord(id) {
+                let records = getHistory();
+                records = records.filter(r => r.id !== id);
+                saveHistory(records);
+                refreshHistoryUI();
+                showToast('🗑️ 记录已删除');
+            }
+
+            function clearAllHistory() {
+                if (confirm('确定要清空所有觉醒记录吗？此操作不可恢复！')) {
+                    saveHistory([]);
+                    refreshHistoryUI();
+                    showToast('🗑️ 所有记录已清空');
+                }
+            }
+
+            function loadRecordToView(record) {
+                const data = {
+                    name: record.name,
+                    primarySoul: { ...record.primarySoul, skills: record.primarySoul.skills || [], rings: record
+                            .primarySoul.rings || [] },
+                    secondarySoul: record.secondarySoul ? { ...record.secondarySoul, skills: record.secondarySoul
+                            .skills || [], rings: record.secondarySoul.rings || [] } : null,
+                    isDual: record.isDual,
+                    timestamp: record.timestamp,
+                };
+                showResult(data);
+                resultCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                showToast('📋 已加载历史记录');
+            }
+
+            function refreshHistoryUI() {
+                const records = getHistory();
+                historyCount.textContent = records.length;
+
+                if (records.length === 0) {
+                    historyList.innerHTML = '<div class="history-empty">暂无觉醒记录，快去觉醒你的武魂吧 ✨</div>';
+                    historyFooter.style.display = 'none';
+                } else {
+                    historyList.innerHTML = records.map((r, i) => {
+                        const timeStr = new Date(r.timestamp).toLocaleString('zh-CN', { month: 'short',
+                            day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                        const dualMark = r.isDual ? ' <span style="color:#f09080;font-size:0.65rem;">[双生]</span>' :
+                            '';
+                        return `
+                        <div class="history-item" data-id="${r.id}" onclick="window._loadRecordById(${r.id})" title="点击查看详情">
+                            <span class="h-index">#${i+1}</span>
+                            <span class="h-name">${r.name}</span>
+                            <span class="h-soul">${r.primarySoul.soulName}${dualMark}</span>
+                            <span class="h-quality"><span class="quality-badge ${r.primarySoul.qualityCss}" style="font-size:0.7rem;">${r.primarySoul.quality}</span></span>
+                            <span class="h-time">${timeStr}</span>
+                            <span class="h-delete" onclick="event.stopPropagation();window._deleteRecord(${r.id})" title="删除此记录">✕</span>
+                        </div>`;
+                    }).join('');
+                    historyFooter.style.display = 'flex';
+                    historyStats.textContent = `共 ${records.length} 条记录 · 最多保存${MAX_HISTORY}条`;
+                }
+            }
+
+            // 全局函数供onclick调用
+            window._loadRecordById = function(id) {
+                const records = getHistory();
+                const record = records.find(r => r.id === id);
+                if (record) loadRecordToView(record);
+            };
+            window._deleteRecord = function(id) {
+                deleteHistoryRecord(id);
+            };
+
+            function exportHistory() {
+                const records = getHistory();
+                if (records.length === 0) {
+                    showToast('⚠️ 没有可导出的记录');
+                    return;
+                }
+                let text = '【武魂觉醒记录导出】\n\n';
+                records.forEach((r, i) => {
+                    const timeStr = new Date(r.timestamp).toLocaleString('zh-CN');
+                    text += `--- 记录 #${i+1} ---\n`;
+                    text += `姓名：${r.name}\n`;
+                    text += `觉醒时间：${timeStr}\n`;
+                    text += `武魂：${r.primarySoul.soulName} (${r.primarySoul.typeName})\n`;
+                    text += `品质：${r.primarySoul.quality}\n`;
+                    text += `魂力等级：${r.primarySoul.soulLevel}级 · ${r.primarySoul.rankName}\n`;
+                    text += `先天魂力：${r.primarySoul.innateSoulPower}级\n`;
+                    if (r.primarySoul.title) text += `封号：${r.primarySoul.title}\n`;
+                    text += `魂环：${r.primarySoul.rings.map(ri=>RING_COLOR_NAMES[ri]).join('、')}\n`;
+                    if (r.isDual && r.secondarySoul) {
+                        text += `[第二武魂] ${r.secondarySoul.soulName} (${r.secondarySoul.typeName}) - ${r.secondarySoul.quality}\n`;
+                    }
+                    text += '\n';
+                });
+                const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = '武魂觉醒记录_' + new Date().toISOString().slice(0, 10) + '.txt';
+                a.click();
+                URL.revokeObjectURL(url);
+                showToast('📤 记录已导出！');
             }
 
             // ============ 觉醒动作 ============
@@ -1237,137 +1675,110 @@
                     nameInput.focus();
                     nameInput.style.borderColor = 'rgba(220,100,60,0.7)';
                     nameInput.style.boxShadow = '0 0 16px rgba(220,100,50,0.3)';
-                    setTimeout(() => {
-                        nameInput.style.borderColor = 'var(--border)';
-                        nameInput.style.boxShadow = 'none';
-                    }, 800);
+                    setTimeout(() => { nameInput.style.borderColor = 'var(--border)';
+                        nameInput.style.boxShadow = 'none'; }, 800);
                     return;
                 }
-
-                // 按钮闪光动画
                 awakenBtn.classList.add('flashing');
                 setTimeout(() => awakenBtn.classList.remove('flashing'), 500);
-
-                // 隐藏旧结果
                 hideResult();
-
-                // 生成数据
                 const data = generateSoulData(name);
-
-                // 延迟显示（模拟觉醒过程）
                 setTimeout(() => {
                     showResult(data);
-                    // 粒子爆发效果（临时增加粒子）
                     spawnBurstParticles();
+                    // 自动保存记录
+                    addToHistory(data);
                 }, 350);
-            }
-
-            // 粒子爆发
-            function spawnBurstParticles() {
-                const burstCount = 25;
-                const cx = window.innerWidth / 2;
-                const cy = window.innerHeight / 2;
-                for (let i = 0; i < burstCount; i++) {
-                    const angle = Math.random() * Math.PI * 2;
-                    const speed = Math.random() * 3 + 2;
-                    particles.push({
-                        x: cx + (Math.random() - 0.5) * 200,
-                        y: cy + (Math.random() - 0.5) * 200,
-                        r: Math.random() * 3 + 1.5,
-                        vx: Math.cos(angle) * speed,
-                        vy: Math.sin(angle) * speed,
-                        alpha: Math.random() * 0.7 + 0.3,
-                        alphaSpeed: -0.015 - Math.random() * 0.03,
-                        hue: 35 + Math.random() * 30,
-                    });
-                }
-                // 限制粒子总数
-                if (particles.length > 150) {
-                    particles = particles.slice(-120);
-                }
             }
 
             // ============ 事件监听 ============
             awakenBtn.addEventListener('click', performAwaken);
-
             nameInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    performAwaken();
-                }
+                if (e.key === 'Enter') { e.preventDefault();
+                    performAwaken(); }
             });
 
             reawakenBtn.addEventListener('click', () => {
-                // 为名字添加微小变化以生成不同结果
                 const currentName = nameInput.value.trim();
                 if (currentName) {
-                    // 在名字后添加不可见零宽字符来改变种子，但对用户透明
-                    const now = Date.now();
-                    const seedSuffix = String.fromCharCode(0x200B) + (now % 10000);
-                    // 实际上我们直接重新生成，因为种子基于名字，
-                    // 同一名字结果相同。这里提示用户微调名字
                     hideResult();
                     setTimeout(() => {
                         const data = generateSoulData(currentName);
                         showResult(data);
                         spawnBurstParticles();
-                        showToast('武魂重新觉醒！试试修改名字获取不同结果~');
+                        addToHistory(data);
                     }, 300);
                 } else {
                     showToast('请先输入名字再觉醒 ✨');
                 }
             });
 
-            copyBtn.addEventListener('click', () => {
-                const data = generateSoulData(nameInput.value.trim() || '无名');
-                let text = `【${data.name} 的武魂觉醒结果】\n\n`;
-                text += `武魂：${data.primarySoul.soulName}\n`;
-                text += `类型：${data.primarySoul.typeName}\n`;
-                text += `品质：${data.primarySoul.quality}\n`;
-                text += `先天魂力：${data.primarySoul.innateSoulPower}级\n`;
-                text += `魂力等级：${data.primarySoul.soulLevel}级 · ${data.primarySoul.rankName}\n`;
-                if (data.primarySoul.title) text += `封号：${data.primarySoul.title}\n`;
-                text += `魂环：${data.primarySoul.rings.map(r => RING_COLOR_NAMES[r]).join('、')}\n`;
-                if (data.primarySoul.skills.length > 0) {
-                    text += `魂技：${data.primarySoul.skills.map((s, i) => `第${i + 1}魂技-${s.name}`).join('、')}\n`;
-                }
-                if (data.isDual && data.secondarySoul) {
-                    text += `\n【第二武魂】\n`;
-                    text += `武魂：${data.secondarySoul.soulName}\n`;
-                    text += `类型：${data.secondarySoul.typeName}\n`;
-                    text += `品质：${data.secondarySoul.quality}\n`;
-                    text += `魂力等级：${data.secondarySoul.soulLevel}级 · ${data.secondarySoul.rankName}\n`;
-                }
-
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(text).then(() => {
-                        showToast('✅ 武魂信息已复制到剪贴板！');
-                    }).catch(() => {
-                        fallbackCopy(text);
-                    });
+            saveRecordBtn.addEventListener('click', () => {
+                if (currentResultData) {
+                    addToHistory(currentResultData);
                 } else {
-                    fallbackCopy(text);
+                    showToast('⚠️ 请先觉醒武魂再保存');
                 }
             });
 
-            function fallbackCopy(text) {
-                const textarea = document.createElement('textarea');
-                textarea.value = text;
-                textarea.style.position = 'fixed';
-                textarea.style.opacity = '0';
-                document.body.appendChild(textarea);
-                textarea.select();
-                try {
-                    document.execCommand('copy');
-                    showToast('✅ 武魂信息已复制到剪贴板！');
-                } catch (e) {
-                    showToast('⚠️ 复制失败，请手动选择文字复制');
+            copyBtn.addEventListener('click', () => {
+                if (!currentResultData) { showToast('⚠️ 请先觉醒武魂');
+                    return; }
+                const data = currentResultData;
+                let text = `【${data.name} 的武魂觉醒结果】\n\n`;
+                text += `武魂：${data.primarySoul.soulName}\n类型：${data.primarySoul.typeName}\n品质：${data.primarySoul.quality}\n`;
+                text +=
+                    `先天魂力：${data.primarySoul.innateSoulPower}级\n魂力等级：${data.primarySoul.soulLevel}级 · ${data.primarySoul.rankName}\n`;
+                if (data.primarySoul.title) text += `封号：${data.primarySoul.title}\n`;
+                text += `魂环：${data.primarySoul.rings.map(r=>RING_COLOR_NAMES[r]).join('、')}\n`;
+                if (data.primarySoul.skills.length > 0) text +=
+                    `魂技：${data.primarySoul.skills.map((s,i)=>`第${i+1}魂技-${s.name}`).join('、')}\n`;
+                if (data.isDual && data.secondarySoul) {
+                    text +=
+                        `\n【第二武魂】\n武魂：${data.secondarySoul.soulName}\n类型：${data.secondarySoul.typeName}\n品质：${data.secondarySoul.quality}\n`;
                 }
-                document.body.removeChild(textarea);
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(() => showToast('✅ 武魂信息已复制！')).catch(() =>
+                        fallbackCopy(text));
+                } else fallbackCopy(text);
+            });
+
+            function fallbackCopy(text) {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                try { document.execCommand('copy');
+                    showToast('✅ 武魂信息已复制！'); } catch (e) { showToast('⚠️ 复制失败，请手动选择'); }
+                document.body.removeChild(ta);
             }
 
-            // ============ 初始演示 ============
-            // 页面加载后自动演示一个示例
+            // 历史面板折叠
+            historyHeader.addEventListener('click', () => {
+                const isOpen = historyBody.classList.contains('expanded');
+                if (isOpen) {
+                    historyBody.classList.remove('expanded');
+                    historyHeader.classList.remove('open');
+                } else {
+                    historyBody.classList.add('expanded');
+                    historyHeader.classList.add('open');
+                    refreshHistoryUI();
+                }
+            });
+
+            clearHistoryBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                clearAllHistory();
+            });
+            exportBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                exportHistory();
+            });
+
+            // ============ 初始加载 ============
+            refreshHistoryUI();
             setTimeout(() => {
                 if (!nameInput.value.trim()) {
                     nameInput.value = '唐三';
@@ -1375,18 +1786,16 @@
                 }
             }, 600);
 
-            // ============ 输入框聚焦时清空演示 ============
             nameInput.addEventListener('focus', function() {
-                if (this.value === '唐三' && resultCard.classList.contains('visible')) {
-                    // 保持演示结果，不清除
-                }
+                if (this.value === '唐三' && resultCard.classList.contains('visible')) { /* 保持演示 */ }
             });
 
-            console.log('🌟 武魂觉醒生成器已就绪');
-            console.log('  输入名字，点击"觉醒"按钮来生成你的专属武魂吧！');
-            console.log('  同一名字会生成相同的武魂结果（命运注定）');
-            console.log('  试试修改名字来探索不同的武魂吧~');
-            console.log('  💎 小概率可出现双生武魂或神级武魂哦！');
+            console.log('🌟 武魂觉醒生成器（增强版）已就绪');
+            console.log('  ✨ 武魂类型：兽武魂、器武魂、植物武魂、元素武魂、特殊武魂、食物武魂、精神武魂、毒武魂、本体武魂');
+            console.log('  📦 武魂总量：400+ 种不同武魂');
+            console.log('  💾 觉醒记录自动保存至本地浏览器');
+            console.log('  📜 支持查看、删除、导出历史记录');
+            console.log('  💎 双生武魂概率约3%，神级武魂等待有缘人！');
         })();
     </script>
 </body>
